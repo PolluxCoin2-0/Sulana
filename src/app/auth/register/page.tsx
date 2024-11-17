@@ -86,7 +86,7 @@ const RegistrationPage: React.FC = () => {
         <p className="text-sm text-white/70 mt-2 text-center">
           Already have an account?{" "}
           <Link
-            href="/pages/auth/login"
+            href="/auth/login"
             className="text-purple-300 hover:text-purple-800 underline"
           >
             Login

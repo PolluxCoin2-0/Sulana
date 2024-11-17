@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { WalletIcon } from "@heroicons/react/24/outline";
-import Logo from "../../../../assests/LogoWithText.svg"; // Adjust logo path as needed
+import Logo from "../../../assests/LogoWithText.svg"; // Adjust logo path as needed
 import Link from "next/link";
 
 const Login: React.FC = () => {
@@ -32,7 +32,7 @@ const Login: React.FC = () => {
         {/* Buttons */}
         <div className="space-y-4">
           {/* Register Button */}
-          <Link href="/pages/auth/register">
+          <Link href="/auth/register">
           <button
             className="w-full py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-purple-700 to-purple-900 hover:from-purple-800 hover:to-purple-900 shadow-xl transform hover:scale-105 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
           >
@@ -41,7 +41,7 @@ const Login: React.FC = () => {
           </Link>
 
           {/* Connect Wallet Button */}
-          <Link href="/pages/dashboard"
+          <Link href="/dashboard"
             className="w-full py-4 rounded-xl text-black font-semibold bg-white/20 backdrop-blur-lg border border-white/40 hover:bg-white/30 transition duration-300 flex items-center justify-center shadow-xl transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
             >
           

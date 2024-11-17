@@ -1,14 +1,17 @@
+"use client";
 import Image from "next/image";
-import React from "react";
-import SilverPool from "../../../assests/SilverPool.svg";
-import GoldPool from "../../../assests/GoldPool.svg";
-import PlatinumPool from "../../../assests/Platnium Pool.svg";
-import DiamondPool from "../../../assests/Diamond Pool.svg";
-import CrownDiamondPool from "../../../assests/CrownDiamondPool.svg";
-import SUL from "../../../assests/SUL.svg";
-import Stake from "../../../assests/Stake.svg";
-import Mint from "../../../assests/Mint.svg";
+import React, { useState } from "react";
+import SilverPool from "../../assests/SilverPool.svg";
+import GoldPool from "../../assests/GoldPool.svg";
+import PlatinumPool from "../../assests/Platnium Pool.svg";
+import DiamondPool from "../../assests/Diamond Pool.svg";
+import CrownDiamondPool from "../../assests/CrownDiamondPool.svg";
+import SUL from "../../assests/SUL.svg";
+import Stake from "../../assests/Stake.svg";
+import Mint from "../../assests/Mint.svg";
 import MintedTransactions from "./MintedTransactions";
+import ShimmerEffect from "@/app/components/ShimmerEffect";
+import LoaderButton from "@/app/components/Loader";
 
 const transactions = [
   {
@@ -56,8 +59,13 @@ const transactions = [
 ];
 
 const DashBoard: React.FC = () => {
+  const [isComponentLoading, setComponentLoading] = useState <boolean>(false);
+  if (isComponentLoading) {
+    return <ShimmerEffect />;
+  }
   return (
     <div className="min-h-screen bg-black px-12 py-7">
+      <LoaderButton/>
       {/* Referral Link Section */}
       <div
         className="bg-[linear-gradient(90.11deg,rgba(137,34,179,0.264)_0.11%,rgba(43,37,90,0.1782)_47.67%,rgba(105,26,139,0.264)_99.92%)]
@@ -244,7 +252,7 @@ const DashBoard: React.FC = () => {
           ].map(({ value, text, gradient, imagePath }, idx) => (
             <div
               key={idx}
-              className={`bg-opacity-30 px-4 py-4 rounded-md flex items-center justify-between text-white ${gradient}`}
+              className={`bg-opacity-30 px-4 py-4 rounded-xl flex items-center justify-between text-white ${gradient}`}
             >
               <div className="flex flex-col justify-center">
                 <span className="text-2xl text-white font-bold">{value}</span>

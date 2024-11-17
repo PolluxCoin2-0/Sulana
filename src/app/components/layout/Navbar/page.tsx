@@ -1,8 +1,19 @@
+"use client";
 import React from "react";
 import Logo from "../../../../assests/LogoWithText.svg";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const Navbar: React.FC = () => {
+  const pathname = usePathname();
+  console.log("Current Pathname:", pathname); // Log the pathname to check
+
+  const routesToHideNavbar = ["/", "/login", "/register"];
+  const shouldShowNavbar = routesToHideNavbar.some(route => pathname.startsWith(route));
+  console.log("gfgfhgf", shouldShowNavbar)
+
+  if (shouldShowNavbar) return null;
+
   return (
     <nav className="w-full bg-black shadow-[0px_1px_15px_0px_rgba(255,255,255,0.2)] backdrop-blur-sm z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
