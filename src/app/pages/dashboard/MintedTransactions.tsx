@@ -24,7 +24,8 @@ const MintedTransactions: React.FC<{ transactions: Transaction[] }> = ({ transac
       {transactions.map((transaction, index) => (
         <div
           key={index}
-          className="text-white flex flex-row items-center justify-between pt-4"
+          className="text-white flex flex-row items-center justify-between pt-4 pb-2 border-b border-gray-400 border-opacity-30
+          last:border-0"
         >
           <p className="px-8 py-2 w-[20%] text-left">{transaction.amount}</p>
           <p className="px-4 py-2 w-[20%] text-center">{transaction.mintRatio}</p>
