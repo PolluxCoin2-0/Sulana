@@ -20,10 +20,6 @@
     "typeRoots": [
       "./node_modules/@types"
     ],
-    "types": [
-      "stats.js",
-      "webxr"
-    ],
     "plugins": [
       {
         "name": "next"
