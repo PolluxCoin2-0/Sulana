@@ -6,7 +6,7 @@ import Link from "next/link";
 
 const Login: React.FC = () => {
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
+    <div className="relative flex items-center justify-center min-h-screen overflow-hidden">
       {/* Background Gradient */}
       <div
         className="absolute inset-0 -z-10"
@@ -17,14 +17,14 @@ const Login: React.FC = () => {
       ></div>
 
       {/* Content Wrapper */}
-      <div className="relative z-10 w-full max-w-md bg-white/20 backdrop-blur-lg rounded-xl p-12 shadow-2xl">
+      <div className="relative z-10 w-full max-w-md bg-white/20 backdrop-blur-lg rounded-xl p-6 md:p-10 shadow-2xl mx-4 sm:mx-6">
         {/* Logo and Brand Name */}
-        <div className="text-center mb-4">
+        <div className="text-center mb-6 md:mb-8">
           <Image
             src={Logo} // Replace with your logo path
             alt="Sulmine Logo"
-            width={250} // Adjust logo width
-            height={60} // Adjust logo height
+            width={200} // Adjust logo width
+            height={50} // Adjust logo height
             className="mx-auto"
           />
         </div>
@@ -33,25 +33,22 @@ const Login: React.FC = () => {
         <div className="space-y-4">
           {/* Register Button */}
           <Link href="/auth/register">
-          <button
-            className="w-full py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-purple-700 to-purple-900 hover:from-purple-800 hover:to-purple-900 shadow-xl transform hover:scale-105 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-          >
-            Register
-          </button>
+            <button className="w-full py-3 md:py-4 mb-4 rounded-xl text-white font-semibold bg-gradient-to-r from-purple-700 to-purple-900 hover:from-purple-800 hover:to-purple-900 shadow-lg transform hover:scale-105 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+              Register
+            </button>
           </Link>
 
           {/* Connect Wallet Button */}
-          <Link href="/dashboard"
-            className="w-full py-4 rounded-xl text-black font-semibold bg-white/20 backdrop-blur-lg border border-white/40 hover:bg-white/30 transition duration-300 flex items-center justify-center shadow-xl transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-            >
-          
-            <WalletIcon className="h-6 w-6 mr-3 text-black" />
-            Connect Wallet
+          <Link href="/dashboard">
+            <button className="w-full py-3 md:py-4 rounded-xl text-black font-semibold bg-white/20 backdrop-blur-lg border border-white/40 hover:bg-white/30 transition duration-300 flex items-center justify-center shadow-lg transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+              <WalletIcon className="h-6 w-6 mr-2 text-black" />
+              Connect Wallet
+            </button>
           </Link>
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-white/80 text-sm">
+        <div className="mt-8 text-center text-white/80 text-xs md:text-sm">
           <p>By logging in, you agree to our</p>
           <a
             href="#"
