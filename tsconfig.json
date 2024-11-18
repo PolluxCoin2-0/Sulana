@@ -21,7 +21,6 @@
       "./node_modules/@types"
     ],
     "types": [
-      "offscreencanvas",
       "stats.js",
       "webxr"
     ],
