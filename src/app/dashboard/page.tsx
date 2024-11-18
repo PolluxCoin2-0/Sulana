@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
+// import { useState } from "react";
 import SilverPool from "../../assests/SilverPool.svg";
 import GoldPool from "../../assests/GoldPool.svg";
 import PlatinumPool from "../../assests/Platnium Pool.svg";
@@ -10,7 +10,7 @@ import SUL from "../../assests/SUL.svg";
 import Stake from "../../assests/Stake.svg";
 import Mint from "../../assests/Mint.svg";
 import MintedTransactions from "./MintedTransactions";
-import ShimmerEffect from "@/app/components/ShimmerEffect";
+// import ShimmerEffect from "@/app/components/ShimmerEffect";
 
 const transactions = [
   {
@@ -58,10 +58,10 @@ const transactions = [
 ];
 
 const DashBoard: React.FC = () => {
-  const [isComponentLoading, setComponentLoading] = useState <boolean>(false);
-  if (isComponentLoading) {
-    return <ShimmerEffect />;
-  }
+  // const [isComponentLoading, setComponentLoading] = useState <boolean>(false);
+  // if (isComponentLoading) {
+  //   return <ShimmerEffect />;
+  // }
   return (
     <div className="min-h-screen bg-black px-2 md:px-4 py-7">
       {/* Referral Link Section */}
