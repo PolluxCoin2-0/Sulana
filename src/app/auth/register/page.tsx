@@ -8,7 +8,7 @@ import {
 import Link from "next/link";
 import { getPolinkweb } from "@/lib/connectWallet";
 import { toast } from "react-toastify";
-import { approvalApi, getBalanceApi, registerApi } from "@/api/apiFunctions";
+import { approvalApi, getBalanceApi, registerApi, stakeSulBalanceApi } from "@/api/apiFunctions";
 import { checkStakeBalance } from "@/lib/checkStakeBalance";
 import Loader from "../../components/Loader";
 import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
@@ -97,8 +97,8 @@ const RegistrationPage: React.FC = () => {
         throw new Error("Approval Failed!");
       }
 
-      // SIGN TRANSACTION
       if (window.pox) {
+        // SIGN TRANSACTION
         const signedTransaction = await window.pox.signdata(
           approvalRawData?.data?.transaction
         );
@@ -128,8 +128,47 @@ const RegistrationPage: React.FC = () => {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
       }
+
+        // STAKE SUL AMOUNT
+        const stakeBalanceApiData = await stakeSulBalanceApi(userWalletAddress, sulAmount, referralAddress);
+        console.log("stakeBalanceApiData", stakeBalanceApiData);
+        if (stakeBalanceApiData?.statusCode!== 200) {
+          toast.error("Stake failed!");
+          throw new Error("Stake failed!");
+        }
+
+       // SIGN TRANSACTION
+       const stakedSignedTransaction = await window.pox.signdata(
+        stakeBalanceApiData?.data?.transaction
+      );
+      console.log({ stakedSignedTransaction });
+      if (stakedSignedTransaction[2] !== "Sign data Successfully") {
+        toast.error("Sign data failed!");
+        throw new Error("Sign data failed!");
       }
 
+      // BROADCAST TRANSACTION
+      const stakedBroadcast = await window.pox.broadcast(
+        JSON.parse(stakedSignedTransaction[1])
+      );
+      console.log({ stakedBroadcast });
+      if (stakedBroadcast[2] !== "Broadcast Successfully Done") {
+        toast.error("Broadcast failed!");
+        throw new Error("Broadcast failed!");
+      }
+      const stakedBroadcastResult = JSON.parse(stakedBroadcast[1]); // Parse the JSON string
+     const stakedTxid = stakedBroadcastResult.txid; // Access the txid
+      console.log("Transaction ID:", stakedTxid);
+
+      // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
+    const stakedTransactionStatus = await checkTransactionStatus(stakedTxid);
+    console.log({ stakedTransactionStatus });
+     if (stakedTransactionStatus!=="SUCCESS") {
+      toast.error("Transaction failed!");
+      throw new Error("Transaction failed!");
+    }
+      }
+   
       // Call the API to register the user with the wallet address and referral address
       const registerApiResponseData = await registerApi(
         userWalletAddress,

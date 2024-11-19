@@ -4,10 +4,8 @@ const API_ENDPOINTS = {
       register: "/signUp",
     },
     user: {
-      getUserDetails: "/getUser",
-      depositFund: "/depositFund",
-      withdrawFund: "/withdraw",
       getBalance: "/getBalanceOf",
+      stakeBalance: "/stakeSulaana",
     },
     tokenReturns: {
       userTotalReturns: "/getUserTotalReturn",

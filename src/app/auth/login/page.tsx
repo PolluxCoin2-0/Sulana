@@ -1,10 +1,20 @@
-import React from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { WalletIcon } from "@heroicons/react/24/outline";
 import Logo from "../../../assests/LogoWithText.svg"; // Adjust logo path as needed
 import Link from "next/link";
+import { toast } from "react-toastify";
 
 const Login: React.FC = () => {
+  // const [isLoading, setIsLoading] = useState<boolean>(false);
+  // const handleLogin = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  //   e.preventDefault();
+  //   if (isLoading) {
+  //     toast.warning("Login in progress");
+  //     return;
+  //   }
+
+  // }
   return (
     <div className="relative flex items-center justify-center min-h-screen overflow-hidden">
       {/* Background Gradient */}
