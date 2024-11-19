@@ -8,6 +8,7 @@ import {
 import Link from "next/link";
 import { getPolinkweb } from "@/lib/connectWallet";
 import { toast } from "react-toastify";
+import { approvalApi, registerApi } from "@/api/apiFunctions";
 
 const RegistrationPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
@@ -53,15 +54,32 @@ const RegistrationPage: React.FC = () => {
    return;
    }
 
+     //  CHECK USER HAVE 200 POX IS STAKED OR NOT
+    // USER MUST HAVE A MINIMUM SUL AMOUNT IN THEIR WALLET EQUAL TO OR GREATER THAN THE ENTERED AMOUNT
     // Call the API to register the user with the wallet address and referral address
     try {
-      // APPROVAL   
+      // APPROVAL 
+      const approvalRawData = await approvalApi(userWalletAddress, sulAmount);
+      console.log(approvalRawData)
       // SIGN TRANSACTION
+      if (window.pox) {
+      const signedTransaction = await window.pox.signdata(
+        approvalRawData?.data?.transaction
+      );
+      console.log({signedTransaction});
+
       // BROADCAST TRANSACTION
+      const broadcast = await window.pox.broadcast(JSON.parse(signedTransaction[1]));
+      console.log({broadcast});
+    }
+
       // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-      // REGISTER API
-    } catch (error) {
       
+      // REGISTER API
+      const registerApiResponseData = await registerApi(userWalletAddress, sulAmount, referralAddress);
+      console.log("registerApiRepsponseData", registerApiResponseData);
+    } catch (error) {
+      console.log("error", error);
     } finally{
       setIsLoading(false);
     }

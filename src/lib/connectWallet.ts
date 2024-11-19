@@ -20,18 +20,20 @@ declare global {
   interface Window {
     pox?: {
       getDetails: () => Promise<object>;
+      signdata: (data: object) => Promise<string []>;
+      broadcast: (data: object) => Promise<string []>;
     };
   }
 }
 
 export async function getPolinkweb(): Promise<WalletDetails> {
-  const intervalDuration = 500; // Check every 500ms
+  const intervalDuration = 500; 
 
   return new Promise<WalletDetails>((resolve, reject) => {
     const obj = setInterval(async () => {
       try {
         if (window.pox) {
-          clearInterval(obj); // Stop checking once `pox` is available
+          clearInterval(obj);
 
           const detailsData = await window.pox.getDetails();
           const parsedDetailsObject = JSON.parse(JSON.stringify(detailsData));

@@ -23,7 +23,10 @@ const API_ENDPOINTS = {
       getFromDB : "/getAllCycles"
     },
     referral :{
-      directReferral : "/getAllReferrals"
+      directReferral : "/getAllReferrals",
+    },
+    transaction:{
+      approval:"/approval",
     }
   };
   
