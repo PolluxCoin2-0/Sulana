@@ -31,7 +31,7 @@ export const checkTransactionStatus = async (trxHash: string): Promise<string | 
 
   while (attempt < MAX_ATTEMPTS) {
     try {
-      const response = await axios.post<ApiResponse>(FULL_NODE_TRANSACTION_URL + "/gettransactioninfobyid", {
+      const response = await axios.post<ApiResponse>(FULL_NODE_TRANSACTION_URL + "/wallet/gettransactioninfobyid", {
         value: trxHash,
       });
 

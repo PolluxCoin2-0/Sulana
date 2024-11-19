@@ -8,11 +8,17 @@ import {
 import Link from "next/link";
 import { getPolinkweb } from "@/lib/connectWallet";
 import { toast } from "react-toastify";
-import { approvalApi, getBalanceApi, registerApi, stakeSulBalanceApi } from "@/api/apiFunctions";
+import {
+  approvalApi,
+  broadcastApi,
+  getBalanceApi,
+  registerApi,
+  stakeSulBalanceApi,
+} from "@/api/apiFunctions";
 import { checkStakeBalance } from "@/lib/checkStakeBalance";
 import Loader from "../../components/Loader";
 import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 const RegistrationPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
@@ -22,7 +28,7 @@ const RegistrationPage: React.FC = () => {
   const [referralAddress, setReferralAddress] = useState<string>("");
   const [sulAmount, setSulAmount] = useState<string>("");
   const router = useRouter();
-  
+
   const handleCloseModal = (): void => {
     setIsModalOpen(false);
   };
@@ -79,16 +85,16 @@ const RegistrationPage: React.FC = () => {
       // USER MUST HAVE A MINIMUM SUL AMOUNT IN THEIR WALLET EQUAL TO OR GREATER THAN THE ENTERED AMOUNT
       const sulAmountOfUser = await getBalanceApi(userWalletAddress);
       console.log("sulAmountOfUser", sulAmountOfUser);
-      if(sulAmountOfUser?.data === 0){
+      if (sulAmountOfUser?.data === 0) {
         toast.error(" Insufficient Sul.");
         throw new Error("Insufficient Sul.");
-      } 
-      
-      if(sulAmountOfUser?.data < sulAmount){
+      }
+
+      if (sulAmountOfUser?.data < parseInt(sulAmount)) {
         toast.error("Insufficient Sul.");
         throw new Error("Insufficient Sul.");
       }
-      
+
       // APPROVAL
       const approvalRawData = await approvalApi(userWalletAddress, sulAmount);
       console.log("approvalRawData", approvalRawData);
@@ -109,66 +115,62 @@ const RegistrationPage: React.FC = () => {
         }
 
         // BROADCAST TRANSACTION
-        const broadcast = await window.pox.broadcast(
-          JSON.parse(signedTransaction[1])
+        const parsedSignedTransaction = JSON.parse(signedTransaction[1]);
+        const broadcast = await broadcastApi(
+          parsedSignedTransaction
         );
         console.log({ broadcast });
-        if (broadcast[2] !== "Broadcast Successfully Done") {
-          toast.error("Broadcast failed!");
-          throw new Error("Broadcast failed!");
-        }
-        const broadcastResult = JSON.parse(broadcast[1]); // Parse the JSON string
-       const txid = broadcastResult.txid; // Access the txid
-        console.log("Transaction ID:", txid);
 
         // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-      const transactionStatus = await checkTransactionStatus(txid);
-      console.log({ transactionStatus });
-       if (transactionStatus!=="SUCCESS") {
-        toast.error("Transaction failed!");
-        throw new Error("Transaction failed!");
-      }
+        const transactionStatus = await checkTransactionStatus(broadcast?.txid);
+        console.log({ transactionStatus });
+        if (transactionStatus !== "SUCCESS") {
+          toast.error("Transaction failed!");
+          throw new Error("Transaction failed!");
+        }
 
         // STAKE SUL AMOUNT
-        const stakeBalanceApiData = await stakeSulBalanceApi(userWalletAddress, sulAmount, referralAddress);
+        const stakeBalanceApiData = await stakeSulBalanceApi(
+          userWalletAddress,
+          sulAmount,
+          referralAddress
+        );
         console.log("stakeBalanceApiData", stakeBalanceApiData);
-        if (stakeBalanceApiData?.statusCode!== 200) {
+        if (!stakeBalanceApiData?.data) {
           toast.error("Stake failed!");
           throw new Error("Stake failed!");
         }
 
-       // SIGN TRANSACTION
-       const stakedSignedTransaction = await window.pox.signdata(
-        stakeBalanceApiData?.data?.transaction
-      );
-      console.log({ stakedSignedTransaction });
-      if (stakedSignedTransaction[2] !== "Sign data Successfully") {
-        toast.error("Sign data failed!");
-        throw new Error("Sign data failed!");
+        // SIGN TRANSACTION
+        const stakedSignedTransaction = await window.pox.signdata(
+          stakeBalanceApiData?.data?.transaction
+        );
+        console.log({ stakedSignedTransaction });
+        if (stakedSignedTransaction[2] !== "Sign data Successfully") {
+          toast.error("Sign data failed!");
+          throw new Error("Sign data failed!");
+        }
+
+        // BROADCAST TRANSACTION
+        const parsedStakedSignedTransaction = JSON.parse(
+          stakedSignedTransaction[1]
+        );
+        const stakedBroadcast = await broadcastApi(
+          parsedStakedSignedTransaction
+        );
+        console.log({ stakedBroadcast });
+
+        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
+        const stakedTransactionStatus = await checkTransactionStatus(
+          stakedBroadcast?.txid
+        );
+        console.log({ stakedTransactionStatus });
+        if (stakedTransactionStatus !== "SUCCESS") {
+          toast.error("Transaction failed!");
+          throw new Error("Transaction failed!");
+        }
       }
 
-      // BROADCAST TRANSACTION
-      const stakedBroadcast = await window.pox.broadcast(
-        JSON.parse(stakedSignedTransaction[1])
-      );
-      console.log({ stakedBroadcast });
-      if (stakedBroadcast[2] !== "Broadcast Successfully Done") {
-        toast.error("Broadcast failed!");
-        throw new Error("Broadcast failed!");
-      }
-      const stakedBroadcastResult = JSON.parse(stakedBroadcast[1]); // Parse the JSON string
-     const stakedTxid = stakedBroadcastResult.txid; // Access the txid
-      console.log("Transaction ID:", stakedTxid);
-
-      // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-    const stakedTransactionStatus = await checkTransactionStatus(stakedTxid);
-    console.log({ stakedTransactionStatus });
-     if (stakedTransactionStatus!=="SUCCESS") {
-      toast.error("Transaction failed!");
-      throw new Error("Transaction failed!");
-    }
-      }
-   
       // Call the API to register the user with the wallet address and referral address
       const registerApiResponseData = await registerApi(
         userWalletAddress,
@@ -191,7 +193,7 @@ const RegistrationPage: React.FC = () => {
         throw new Error("Registration failed!");
       }
       toast.success("Registration Success");
-      router.push('/');
+      router.push("/");
     } catch (error) {
       console.log("error", error);
     } finally {
@@ -316,19 +318,18 @@ const RegistrationPage: React.FC = () => {
               <UserIcon className="absolute top-1/2 left-3 md:left-4 h-6 w-6 md:h-8 md:w-8 text-white/60 group-focus-within:text-black transform -translate-y-1/2 transition duration-300" />
             </div>
             {/* Register Button */}
-            {
-              isLoading ? 
+            {isLoading ? (
               <div className="w-full flex justify-center">
-                <Loader/>
-                </div>
-                 :
-            <button
-            type="submit"
-            className="w-full py-3 md:py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 shadow-xl hover:shadow-purple-800/50 transform hover:scale-105 transition duration-300"
-            >
-              Register
-            </button>
-            }
+                <Loader />
+              </div>
+            ) : (
+              <button
+                type="submit"
+                className="w-full py-3 md:py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 shadow-xl hover:shadow-purple-800/50 transform hover:scale-105 transition duration-300"
+              >
+                Register
+              </button>
+            )}
           </form>
           {/* Terms and Conditions */}
           <p className="text-xs md:text-sm text-white/70 mt-4 md:mt-6 text-center">

@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./components/layout/Navbar/page";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ReduxProvider from "@/redux/reduxProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <ReduxProvider>
          <ToastContainer
             position="top-center"
             autoClose={3000}
@@ -43,6 +45,7 @@ export default function RootLayout({
           />
         <Navbar />
         {children}
+        </ReduxProvider>
       </body>
     </html>
   );

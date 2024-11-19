@@ -16,7 +16,7 @@ const getStakeBalance = async (
 ): Promise<StakeBalanceResponse> => {
   try {
     const response = await axios.post(
-      `${FULL_NODE_TRANSACTION_URL}/getaccount`,
+      `${FULL_NODE_TRANSACTION_URL}/wallet/getaccount`,
       {
         address: walletAddress,
         visible: true,
