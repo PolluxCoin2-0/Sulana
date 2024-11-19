@@ -15,3 +15,8 @@ export const registerApi = async(walletAddress:string, depositAmount:string, ref
 export const loginApi = async (walletAddress: string): Promise<object> => {
     return postRequest<object>(API_ENDPOINTS.auth.login, { walletAddress }, "");
   };
+
+//   GET BALANCE OF USER
+export const getBalanceApi = async (walletAddress:string): Promise<object> =>{
+    return postRequest<object>(API_ENDPOINTS.user.getBalance,{walletAddress},"");
+}

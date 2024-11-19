@@ -33,17 +33,17 @@
 .loading {
   --speed-of-animation: 0.9s;
   --gap: 6px;
-  --first-color: #4c86f9;  /* Your first color */
-  --second-color: #49a84c; /* Your second color */
-  --third-color: #f6bb02;  /* Your third color */
-  --fourth-color: #f6bb02; /* Your fourth color (same as third) */
-  --fifth-color: #2196f3;  /* Your fifth color */
+  --first-color: #000000;  /* Your first color */
+  --second-color: #000000; /* Your second color */
+  --third-color: #000000;  /* Your third color */
+  --fourth-color: #000000; /* Your fourth color (same as third) */
+  --fifth-color: #000000;  /* Your fifth color */
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100px;
   gap: 6px;
-  height: 100px;
+  height: 50px;
 }
 
 .loading span {

@@ -8,7 +8,10 @@ import {
 import Link from "next/link";
 import { getPolinkweb } from "@/lib/connectWallet";
 import { toast } from "react-toastify";
-import { approvalApi, registerApi } from "@/api/apiFunctions";
+import { approvalApi, getBalanceApi, registerApi } from "@/api/apiFunctions";
+import { checkStakeBalance } from "@/lib/checkStakeBalance";
+import Loader from "../../components/Loader";
+import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
 
 const RegistrationPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
@@ -36,12 +39,15 @@ const RegistrationPage: React.FC = () => {
       }
     } catch (error) {
       toast.error("Something went wrong");
+      throw error;
     } finally {
       setWalletLoading(false);
     }
   };
 
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleRegister = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     e.preventDefault();
 
     if (isLoading) {
@@ -49,41 +55,104 @@ const RegistrationPage: React.FC = () => {
       return;
     }
 
-   if(!userWalletAddress || !referralAddress || !sulAmount){
-   toast.error("All input fields must be completed.");
-   return;
-   }
+    setIsLoading(true);
 
-     //  CHECK USER HAVE 200 POX IS STAKED OR NOT
-    // USER MUST HAVE A MINIMUM SUL AMOUNT IN THEIR WALLET EQUAL TO OR GREATER THAN THE ENTERED AMOUNT
-    // Call the API to register the user with the wallet address and referral address
     try {
-      // APPROVAL 
+      if (!userWalletAddress || !referralAddress || !sulAmount) {
+        toast.error("All input fields must be completed.");
+        setIsLoading(false);
+        return;
+      }
+
+      //  CHECK USER HAVE 200 POX IS STAKED OR NOT
+      const isStakeSufficient = await checkStakeBalance(userWalletAddress);
+      if (isStakeSufficient) {
+        toast.success("Stake amount is sufficient.");
+      } else {
+        toast.error("Stake amount is insufficient");
+        setIsLoading(false);
+        throw new Error("Stake amount is insufficient.");
+      }
+
+      // USER MUST HAVE A MINIMUM SUL AMOUNT IN THEIR WALLET EQUAL TO OR GREATER THAN THE ENTERED AMOUNT
+      const sulAmountOfUser = await getBalanceApi(userWalletAddress);
+      console.log("sulAmountOfUser", sulAmountOfUser);
+      if(sulAmountOfUser?.data === 0){
+        toast.error(" Insufficient Sul.");
+        throw new Error("Insufficient Sul.");
+      }
+      // APPROVAL
       const approvalRawData = await approvalApi(userWalletAddress, sulAmount);
-      console.log(approvalRawData)
+      console.log("approvalRawData", approvalRawData);
+      if (!approvalRawData?.data?.transaction) {
+        toast.error("Approval Failed!");
+        throw new Error("Approval Failed!");
+      }
+
       // SIGN TRANSACTION
       if (window.pox) {
-      const signedTransaction = await window.pox.signdata(
-        approvalRawData?.data?.transaction
+        const signedTransaction = await window.pox.signdata(
+          approvalRawData?.data?.transaction
+        );
+        console.log({ signedTransaction });
+        if (signedTransaction[2] !== "Sign data Successfully") {
+          toast.error("Sign data failed!");
+          throw new Error("Sign data failed!");
+        }
+
+        // BROADCAST TRANSACTION
+        const broadcast = await window.pox.broadcast(
+          JSON.parse(signedTransaction[1])
+        );
+        console.log({ broadcast });
+        if (broadcast[2] !== "Broadcast Successfully Done") {
+          toast.error("Broadcast failed!");
+          throw new Error("Broadcast failed!");
+        }
+        const broadcastResult = JSON.parse(broadcast[1]); // Parse the JSON string
+       const txid = broadcastResult.txid; // Access the txid
+        console.log("Transaction ID:", txid);
+
+        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
+      const transactionStatus = await checkTransactionStatus(txid);
+      console.log({ transactionStatus });
+       if (transactionStatus!=="SUCCESS") {
+        toast.error("Transaction failed!");
+        throw new Error("Transaction failed!");
+      }
+      }
+
+      // Call the API to register the user with the wallet address and referral address
+      const registerApiResponseData = await registerApi(
+        userWalletAddress,
+        sulAmount,
+        referralAddress
       );
-      console.log({signedTransaction});
-
-      // BROADCAST TRANSACTION
-      const broadcast = await window.pox.broadcast(JSON.parse(signedTransaction[1]));
-      console.log({broadcast});
-    }
-
-      // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-      
-      // REGISTER API
-      const registerApiResponseData = await registerApi(userWalletAddress, sulAmount, referralAddress);
       console.log("registerApiRepsponseData", registerApiResponseData);
+      if (registerApiResponseData?.data === "Duplicate Wallet") {
+        toast.error("Wallet Address already registered!");
+        throw new Error("Wallet Address already registered!");
+      }
+
+      if (registerApiResponseData?.data === "Invalid Referral Code") {
+        toast.error("Invalid Referral Code!");
+        throw new Error("Invalid Referral Code!");
+      }
+
+      if (registerApiResponseData?.statusCode !== 200) {
+        toast.error("Registration failed!");
+        throw new Error("Registration failed!");
+      }
+      toast.success("Registration Success");
     } catch (error) {
       console.log("error", error);
-    } finally{
+    } finally {
+      setUserWalletAddress("");
+      setSulAmount("");
+      setReferralAddress("");
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div
@@ -163,8 +232,8 @@ const RegistrationPage: React.FC = () => {
             {/* Wallet Address Input */}
             <div className="relative group">
               <input
-               value={userWalletAddress}
-               onClick={userWalletAddress ? undefined : handleWalletAddress}
+                value={userWalletAddress}
+                onClick={userWalletAddress ? undefined : handleWalletAddress}
                 type="text"
                 placeholder="Wallet Address"
                 className="w-full px-10 md:px-14 py-3 md:py-5 rounded-xl bg-white/10 text-white placeholder:text-white/70 focus:ring-1 focus:ring-black focus:outline-none focus:shadow-lg transition duration-300"
@@ -174,8 +243,10 @@ const RegistrationPage: React.FC = () => {
             {/* Amount Input */}
             <div className="relative group">
               <input
-              value={sulAmount}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSulAmount(e.target.value)}
+                value={sulAmount}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSulAmount(e.target.value)
+                }
                 type="number"
                 inputMode="numeric"
                 placeholder="Amount"
@@ -186,8 +257,10 @@ const RegistrationPage: React.FC = () => {
             {/* Referral Wallet Address Input */}
             <div className="relative group">
               <input
-              value={referralAddress}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReferralAddress(e.target.value)}
+                value={referralAddress}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setReferralAddress(e.target.value)
+                }
                 type="text"
                 placeholder="Referral Wallet Address"
                 className="w-full px-10 md:px-14 py-3 md:py-5 rounded-xl bg-white/10 text-white placeholder:text-white/70 focus:ring-1 focus:ring-black focus:outline-none focus:shadow-lg transition duration-300"
@@ -195,12 +268,19 @@ const RegistrationPage: React.FC = () => {
               <UserIcon className="absolute top-1/2 left-3 md:left-4 h-6 w-6 md:h-8 md:w-8 text-white/60 group-focus-within:text-black transform -translate-y-1/2 transition duration-300" />
             </div>
             {/* Register Button */}
+            {
+              isLoading ? 
+              <div className="w-full flex justify-center">
+                <Loader/>
+                </div>
+                 :
             <button
-              type="submit"
-              className="w-full py-3 md:py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 shadow-xl hover:shadow-purple-800/50 transform hover:scale-105 transition duration-300"
+            type="submit"
+            className="w-full py-3 md:py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 shadow-xl hover:shadow-purple-800/50 transform hover:scale-105 transition duration-300"
             >
               Register
             </button>
+            }
           </form>
           {/* Terms and Conditions */}
           <p className="text-xs md:text-sm text-white/70 mt-4 md:mt-6 text-center">
