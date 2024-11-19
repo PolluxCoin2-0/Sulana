@@ -12,6 +12,7 @@ import { approvalApi, getBalanceApi, registerApi } from "@/api/apiFunctions";
 import { checkStakeBalance } from "@/lib/checkStakeBalance";
 import Loader from "../../components/Loader";
 import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
+import { useRouter } from 'next/navigation';
 
 const RegistrationPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
@@ -20,7 +21,8 @@ const RegistrationPage: React.FC = () => {
   const [userWalletAddress, setUserWalletAddress] = useState<string>("");
   const [referralAddress, setReferralAddress] = useState<string>("");
   const [sulAmount, setSulAmount] = useState<string>("");
-
+  const router = useRouter();
+  
   const handleCloseModal = (): void => {
     setIsModalOpen(false);
   };
@@ -80,7 +82,13 @@ const RegistrationPage: React.FC = () => {
       if(sulAmountOfUser?.data === 0){
         toast.error(" Insufficient Sul.");
         throw new Error("Insufficient Sul.");
+      } 
+      
+      if(sulAmountOfUser?.data < sulAmount){
+        toast.error("Insufficient Sul.");
+        throw new Error("Insufficient Sul.");
       }
+      
       // APPROVAL
       const approvalRawData = await approvalApi(userWalletAddress, sulAmount);
       console.log("approvalRawData", approvalRawData);
@@ -144,6 +152,7 @@ const RegistrationPage: React.FC = () => {
         throw new Error("Registration failed!");
       }
       toast.success("Registration Success");
+      router.push('/');
     } catch (error) {
       console.log("error", error);
     } finally {
