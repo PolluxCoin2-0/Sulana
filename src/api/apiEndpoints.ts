@@ -9,6 +9,8 @@ const API_ENDPOINTS = {
       getUserDetails : "/getUser",
       claimReward : "/claimReward",
       getReferralRewards : "/getUserReferralRewards",
+      getAllUserStakes : "/getAllUserStakes",
+      mintUser :"/mintForUser",
     },
     transaction:{
       approval:"/approval",

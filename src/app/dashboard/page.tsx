@@ -7,18 +7,19 @@ import PlatinumPool from "../../assests/Platnium Pool.svg";
 import DiamondPool from "../../assests/Diamond Pool.svg";
 import CrownDiamondPool from "../../assests/CrownDiamondPool.svg";
 import SUL from "../../assests/SUL.svg";
-import Stake from "../../assests/Stake.svg";
+import StakeImg from "../../assests/Stake.svg";
 import Mint from "../../assests/Mint.svg";
 import MintedTransactions from "./MintedTransactions";
 import ShimmerEffect from "@/app/components/ShimmerEffect";
-import { broadcastApi, claimRewardApi, getUserDetailsApi, referralRewardApi, stakeSulBalanceApi } from "@/api/apiFunctions";
+import { broadcastApi, claimRewardApi, getBalanceApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, userAllStakesApi } from "@/api/apiFunctions";
 import { useSelector } from "react-redux";
-import { UserDetailsData } from "@/interface";
+import { Stake, UserDetailsData } from "@/interface";
 import { RootState } from "@/redux/store";
 import { toast } from "react-toastify";
 import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
 import Loader from "../components/Loader";
 import { useRouter } from "next/navigation";
+import convertToIST from "@/lib/convertToIST";
 
 const transactions = [
   {
@@ -70,10 +71,13 @@ const DashBoard: React.FC = () => {
   const userStateData = useSelector((state: RootState)=>state?.wallet);
   console.log({ userStateData });
   const [isComponentLoading, setComponentLoading] = useState <boolean>(false);
-  const [isLoading, setIsLoading] = useState <boolean>(false);
+  const [isStakeLoading, setIsStakeLoading] = useState <boolean>(false);
+  const [isClaimLoading, setIsClaimLoading] = useState <boolean>(false);
+  const [isMintLoading, setIsMintLoading] = useState <boolean>(false);
   const [userDetails, setUserDetails] = useState<UserDetailsData | null>(null);
   const [stakeAmount, setStakeAmount] = useState<string>("");
   const [referralAmount, setReferralAmount] = useState<number>(0);
+  const [stakedArray, setStakedArray] = useState<Stake[]>([]);
 
   useEffect(()=>{
     if(userStateData?.isLogin){
@@ -83,12 +87,25 @@ const DashBoard: React.FC = () => {
 
   const fetchData = async()=>{
     setComponentLoading(true);
+    // USER DETAILS
     const userDetailsApiData = await getUserDetailsApi(userStateData?.dataObject?.walletAddress as string);
     console.log({userDetailsApiData});
     setUserDetails(userDetailsApiData?.data)
+
+    // USER REFERRAL REWARD
     const referralRewardAPiData = await referralRewardApi(userStateData?.dataObject?.walletAddress as string);
     console.log({referralRewardAPiData});
     setReferralAmount(referralRewardAPiData?.data);
+
+    // USER ALL STAKES DATA
+    const stakesDataArray = await userAllStakesApi(userStateData?.dataObject?.walletAddress as string);
+    console.log({stakesDataArray});
+    const updatedStakes = stakesDataArray.data.map((item: Stake) => ({
+      ...item,
+      isLoading: false, // Once data is fetched, set isLoading to false
+    }));
+    console.log({updatedStakes});
+    setStakedArray(updatedStakes);
     setComponentLoading(false);
   }
   
@@ -100,15 +117,34 @@ const DashBoard: React.FC = () => {
     return <ShimmerEffect />;
   }
 
+  // STAKE FUNC
   const handleStakeFunc =async (e: React.MouseEvent<HTMLButtonElement> ): Promise<void> => {
     e.preventDefault();
-    if(isLoading){
+    if(isStakeLoading){
       toast.warning("Staking in progress");
       return;
     }
 
-    setIsLoading(true);
+    setIsStakeLoading(true);
     try {
+      if (!stakeAmount || isNaN(parseInt(stakeAmount)) || parseInt(stakeAmount) <= 0) {
+        toast.error("Invalid Stake Amount.");
+        setIsStakeLoading(false);
+        return;
+      }
+       // USER MUST HAVE A MINIMUM SUL AMOUNT IN THEIR WALLET EQUAL TO OR GREATER THAN THE ENTERED AMOUNT
+       const sulAmountOfUser = await getBalanceApi(userStateData?.dataObject?.walletAddress as string);
+       console.log("sulAmountOfUser", sulAmountOfUser);
+       if (sulAmountOfUser?.data === 0) {
+         toast.error(" Insufficient Sul.");
+         throw new Error("Insufficient Sul.");
+       }
+ 
+       if (sulAmountOfUser?.data < parseInt(stakeAmount)) {
+         toast.error("Insufficient Sul.");
+         throw new Error("Insufficient Sul.");
+       }
+
       const stakedData = await stakeSulBalanceApi(userStateData?.dataObject?.walletAddress as string, stakeAmount, userStateData?.dataObject?.referredBy as string);
       console.log({stakedData});
       if (!stakedData?.data?.transaction) {
@@ -142,25 +178,29 @@ const DashBoard: React.FC = () => {
           throw new Error("Transaction failed!");
         }
       }
+      setStakeAmount("");
       await fetchData();
       toast.success("Reward claimed successfully");
     } catch (error) {
-      toast.error("Failed to claim reward");
+      toast.error("Failed to stake amount!");
       console.error(error);
     } finally{
-      setIsLoading(false);
+      setIsStakeLoading(false);
     }
   }
 
+  // CLAIM REWARD FUNC
   const handleClaimRewardFunc = async (e: React.MouseEvent<HTMLButtonElement> ): Promise<void> => {
     e.preventDefault();
-    if(isLoading){
+    if(isClaimLoading){
       toast.warning("Claiming reward in progress");
       return;
     }
 
-    setIsLoading(true);
+    setIsClaimLoading(true);
     try {
+
+      // CHECK USER HAVE MORE THAN ZERO AMOUNT TO CLAIM THEIR REWARD
       const claimRewardData = await claimRewardApi(userStateData?.dataObject?.walletAddress as string);
       console.log({claimRewardData});
       if (!claimRewardData?.data?.transaction) {
@@ -197,11 +237,76 @@ const DashBoard: React.FC = () => {
       await fetchData();
       toast.success("Reward claimed successfully");
     } catch (error) {
-      toast.error("Failed to claim reward");
+      toast.error("Failed to claim reward!");
       console.error(error);
     } finally{
-      setIsLoading(false);
+      setIsClaimLoading(false);
     }
+  }
+
+  // MINT FUNC
+  const handleMintFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number ): Promise<void> => {
+    e.preventDefault();
+    if(isMintLoading){
+      toast.warning("Minting in progress");
+      return;
+    }
+
+    setIsMintLoading(true);
+    try {
+       // Create a copy of the staked array to avoid direct mutation
+    const updatedStakedArray = [...stakedArray];
+    updatedStakedArray[index] = { ...updatedStakedArray[index], isLoading: true };
+    setStakedArray(updatedStakedArray);
+
+      // CHECK USER HAVE MORE THAN ZERO AMOUNT TO CLAIM THEIR REWARD
+      const mintData = await mintUserApi(userStateData?.dataObject?.walletAddress as string, index);
+      console.log({mintData});
+      if (!mintData?.data?.transaction) {
+        toast.error("Mint Failed!");
+        throw new Error("Mint Failed!");
+      }
+
+      if (window.pox) {
+        // SIGN TRANSACTION
+        const signedTransaction = await window.pox.signdata(
+          mintData?.data?.transaction
+        );
+        console.log({ signedTransaction });
+        if (signedTransaction[2] !== "Sign data Successfully") {
+          toast.error("Sign data failed!");
+          throw new Error("Sign data failed!");
+        }
+
+        // BROADCAST TRANSACTION
+        const parsedSignedTransaction = JSON.parse(signedTransaction[1]);
+        const broadcast = await broadcastApi(
+          parsedSignedTransaction
+        );
+        console.log({ broadcast });
+
+        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
+        const transactionStatus = await checkTransactionStatus(broadcast?.txid);
+        console.log({ transactionStatus });
+        if (transactionStatus !== "SUCCESS") {
+          toast.error("Transaction failed!");
+          throw new Error("Transaction failed!");
+        }
+      }
+      await fetchData();
+      toast.success("Mint successfully");
+    } catch (error) {
+      toast.error("Failed to mint!");
+      console.error(error);
+    } finally{
+       // Update the loading flag for the specific item
+    const updatedStakedArray = [...stakedArray];
+    updatedStakedArray[index] = { ...updatedStakedArray[index], isLoading: false };
+    setStakedArray(updatedStakedArray);
+    
+      setIsMintLoading(false);
+    }
+
   }
 
   const handleReferralLinkCopy = () => {
@@ -218,7 +323,6 @@ const DashBoard: React.FC = () => {
       toast.error("Wallet address is not available");
     }
   };
-  
 
   return (
     <div className="min-h-screen bg-black px-2 md:px-4 py-7">
@@ -254,8 +358,8 @@ const DashBoard: React.FC = () => {
     {/* Stats Section */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Individual Stats */}
-      {[{ value: "0.00", text: "Stake Balance", icon: Stake },
-        { value: "0.00", text: "Mint Balance", icon: Mint },
+      {[{ value: userDetails?.depositAmount, text: "Stake Balance", icon: StakeImg },
+        { value: userDetails?.totalROI, text: "Mint Balance", icon: Mint },
         { value: referralAmount, text: "Referral Earnings", button: "View" }]
         .map(({ value, text, icon, button }, idx) => (
           <div
@@ -309,7 +413,7 @@ const DashBoard: React.FC = () => {
           </div>
         </div>
         {
-          isLoading?   <div className="w-full flex justify-center">
+          isStakeLoading?   <div className="w-full flex justify-center">
           <Loader />
         </div> : 
         <button
@@ -342,7 +446,7 @@ const DashBoard: React.FC = () => {
           </div>
         </div>
         {
-          isLoading ?   <div className="w-full flex justify-center">
+          isClaimLoading ?   <div className="w-full flex justify-center">
           <Loader />
         </div> :
         <button
@@ -389,27 +493,44 @@ const DashBoard: React.FC = () => {
   {/* Header Section */}
   <div className="bg-[#212D49] rounded-xl text-white flex flex-row items-center justify-between py-2 min-w-[850px] md:min-w-0">
     <p className="font-bold px-8 py-2 w-[20%] text-left">Amount</p>
-    <p className="font-bold px-4 py-2 w-[20%] text-center">Mint Ratio</p>
+    <p className="font-bold px-4 py-2 w-[20%] text-center">Maturity Days</p>
     <p className="font-bold px-4 py-2 w-[20%] text-center">Invest Date</p>
     <p className="font-bold px-4 py-2 w-[20%] text-center">Last Mint</p>
     <p className="font-bold px-8 py-2 w-[20%] text-right">Mint Reward</p>
   </div>
 
   {/* Data Row Section */}
-  <div className="text-white flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0">
-    <p className="px-8 py-2 w-[20%] text-left">100.00</p>
-    <p className="px-4 py-2 w-[20%] text-center">1:1</p>
-    <p className="px-4 py-2 w-[20%] text-left lg:text-center">2024-11-17</p>
-    <p className="px-0 lg:px-4 py-2 w-[20%] text-left lg:text-center">2024-11-15</p>
+  {
+    stakedArray.map ((item, index)=>{
+      return (
+        <>{
+          !item.isUnstaked &&
+       <div className="text-white flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0" key={index}>
+    <p className="px-8 py-2 w-[20%] text-left">{item?.amount}</p>
+    <p className="px-4 py-2 w-[20%] text-center">{item?.mintCount} / 1000</p>
+    <p className="px-4 py-2 w-[20%] text-left lg:text-center">{convertToIST(item?.startTime,"dd/MM/yyyy, HH:mm:ss")}</p>
+    <p className="px-0 lg:px-4 py-2 w-[20%] text-left lg:text-center">
+      {item?.lastMintedAt === "01/01/1970, 05:30:00" ? "First Mint": convertToIST(item?.lastMintedAt,"dd/MM/yyyy, HH:mm:ss")}</p>
     <div className="lg:w-[20%] px-4 flex justify-end">
+      {
+       item.isLoading ? <div className="w-full lg:w-[50%] rounded-xl flex justify-center bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] ">
+        <Loader />
+      </div> : 
       <button
-        className="w-full lg:w-[50%] bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] 
-        text-white text-lg font-semibold px-4 py-2 rounded-xl transform hover:scale-105 transition delay-300"
+      onClick={(e)=>handleMintFunc(e,index)}
+      className="w-full lg:w-[50%] bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] 
+      text-white text-lg font-semibold px-4 py-2 rounded-xl transform hover:scale-105 transition delay-300"
       >
         Mint
       </button>
+        }
     </div>
   </div>
+      }
+        </>
+      )
+    })
+  }
 </div>
 
 

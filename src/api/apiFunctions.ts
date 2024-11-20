@@ -5,7 +5,7 @@ import {
  } from "./apiGenericMethods";
 import API_ENDPOINTS from "./apiEndpoints"; // Import the API endpoints
 import axios from "axios";
-import { BroadcastResponse, getbalanceInterface, LoginApiResponse, referralRewardInterface, registerInterface, stakeBalanceInterface, Transaction,userDetailsInterface } from "@/interface";
+import { BroadcastResponse, getbalanceInterface, LoginApiResponse, referralRewardInterface, registerInterface, stakeBalanceInterface, Transaction,userAllStakesResponseInterface,userDetailsInterface } from "@/interface";
 
 const FULL_NODE_TRANSACTION_URL = process.env.NEXT_PUBLIC_FULL_NODE_TRANSACTION_URL || "";
 
@@ -62,4 +62,14 @@ export const claimRewardApi = async (walletAddress:string): Promise<stakeBalance
 // GET USER REFERRAL REWARD
 export const referralRewardApi = async (walletAddress:string): Promise<referralRewardInterface> =>{
   return postRequest<referralRewardInterface>(API_ENDPOINTS.user.getReferralRewards,{walletAddress},"");
+}
+
+// GET USER ALL STAKES
+export const userAllStakesApi = async (walletAddress:string): Promise<userAllStakesResponseInterface> =>{
+  return postRequest<userAllStakesResponseInterface>(API_ENDPOINTS.user.getAllUserStakes,{walletAddress},"");
+}
+
+// MINT USER
+export const mintUserApi = async (walletAddress:string, stakeIndex:number): Promise<stakeBalanceInterface> =>{
+  return postRequest<stakeBalanceInterface>(API_ENDPOINTS.user.mintUser,{walletAddress, stakeIndex},"");
 }

@@ -81,7 +81,21 @@ interface UserDetailsData {
     data: number;
     message : string;
   }
+
+ interface Stake {
+    amount: number; 
+    startTime: string; 
+    lastMintedAt: string; 
+    mintCount: number; 
+    maturityDuration: number; 
+    beforeMaturityDuration: number; 
+    isUnstaked: boolean; 
+    isLoading?: boolean;
+  }
   
+interface userAllStakesResponseInterface {
+    data: Stake[];
+  }
 
 export type {
     LoginApiResponse,
@@ -94,4 +108,6 @@ export type {
     UserDetailsData,
     walletStateInterface,
     referralRewardInterface,
+    userAllStakesResponseInterface,
+    Stake,
 }
