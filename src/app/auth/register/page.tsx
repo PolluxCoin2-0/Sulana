@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   WalletIcon,
   CurrencyDollarIcon,
@@ -19,6 +19,8 @@ import { checkStakeBalance } from "@/lib/checkStakeBalance";
 import Loader from "../../components/Loader";
 import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 const RegistrationPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
@@ -28,6 +30,7 @@ const RegistrationPage: React.FC = () => {
   const [referralAddress, setReferralAddress] = useState<string>("");
   const [sulAmount, setSulAmount] = useState<string>("");
   const router = useRouter();
+  const userStateData = useSelector((state: RootState)=>state?.wallet);
 
   const handleCloseModal = (): void => {
     setIsModalOpen(false);
@@ -204,6 +207,12 @@ const RegistrationPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (userStateData?.isLogin) {
+      router.push("/dashboard");
+    }
+  }, [userStateData?.isLogin, router]);
+
   return (
     <div
       className="relative min-h-screen flex items-center justify-center overflow-hidden p-4"
@@ -299,7 +308,7 @@ const RegistrationPage: React.FC = () => {
                 }
                 type="number"
                 inputMode="numeric"
-                placeholder="Amount"
+                placeholder="Sul Amount"
                 className="w-full px-10 md:px-14 py-3 md:py-5 rounded-xl bg-white/10 text-white placeholder:text-white/70 focus:ring-1 focus:ring-black focus:outline-none focus:shadow-lg transition duration-300 appearance-none"
               />
               <CurrencyDollarIcon className="absolute top-1/2 left-3 md:left-4 h-6 w-6 md:h-8 md:w-8 text-white/60 group-focus-within:text-black transform -translate-y-1/2 transition duration-300" />

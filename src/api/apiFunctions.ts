@@ -5,40 +5,9 @@ import {
  } from "./apiGenericMethods";
 import API_ENDPOINTS from "./apiEndpoints"; // Import the API endpoints
 import axios from "axios";
+import { BroadcastResponse, getbalanceInterface, LoginApiResponse, referralRewardInterface, registerInterface, stakeBalanceInterface, Transaction,userDetailsInterface } from "@/interface";
 
 const FULL_NODE_TRANSACTION_URL = process.env.NEXT_PUBLIC_FULL_NODE_TRANSACTION_URL || "";
-interface LoginApiResponse {
-    statusCode: number;
-    data: object;
-  }
-
-  
-  interface getbalanceInterface{
-    data: number;
-  }
-
-  interface registerInterface{
-    data: object | string;
-message : string;
-statusCode: number;
-  }
-  
-  interface stakeBalanceInterface {
-    data: {
-      transaction: object ; // The 'transaction' is optional, adjust as needed
-    };
-    message: string;
-  }
-
-  // Define the types for the transaction and response
-interface Transaction {
-  [key: string]: object; // Define more specific fields if you know the structure
-}
-
-interface BroadcastResponse {
-  result: boolean; // Adjust based on actual API response fields
-  txid: string;
-}
 
 // APPROVAL
 export const approvalApi = async(walletAddress:string, amount:string):Promise<stakeBalanceInterface>=>{
@@ -80,3 +49,17 @@ export const broadcastApi = async (transaction: Transaction): Promise<BroadcastR
   }
 };
 
+// GET USER DETAILS
+export const getUserDetailsApi = async (walletAddress:string): Promise<userDetailsInterface> =>{
+  return postRequest<userDetailsInterface>(API_ENDPOINTS.user.getUserDetails,{walletAddress},"");
+}
+
+// CLAIM REWARD
+export const claimRewardApi = async (walletAddress:string): Promise<stakeBalanceInterface> =>{
+  return postRequest<stakeBalanceInterface>(API_ENDPOINTS.user.claimReward,{walletAddress},"");
+}
+
+// GET USER REFERRAL REWARD
+export const referralRewardApi = async (walletAddress:string): Promise<referralRewardInterface> =>{
+  return postRequest<referralRewardInterface>(API_ENDPOINTS.user.getReferralRewards,{walletAddress},"");
+}

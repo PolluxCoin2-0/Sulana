@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { WalletIcon } from "@heroicons/react/24/outline";
 import Logo from "../../../assests/LogoWithText.svg"; // Adjust logo path as needed
@@ -9,12 +9,21 @@ import { getPolinkweb } from "@/lib/connectWallet";
 import { useRouter } from "next/navigation";
 import { loginApi } from "@/api/apiFunctions";
 import { useDispatch } from "react-redux";
-import { setDataObject } from "@/redux/slice";
+import { setDataObject, setIsLogin } from "@/redux/slice";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 const Login: React.FC = () => {
   const router = useRouter();
+  const userStateData = useSelector((state: RootState)=>state?.wallet);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (userStateData?.isLogin) {
+      router.push("/dashboard");
+    }
+  }, [userStateData?.isLogin, router]);
 
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement> ): Promise<void> => {
     e.preventDefault();
@@ -38,7 +47,7 @@ const Login: React.FC = () => {
         toast.error("Invalid wallet address or login failed.");
         throw new Error("Invalid wallet address or login failed.");
       }
-
+      dispatch(setIsLogin(true));
       dispatch(setDataObject(loginApiData?.data));
       toast.success("Login successful");
       // Redirect to home page or any other desired page
@@ -75,7 +84,7 @@ const Login: React.FC = () => {
         </div>
 
         {/* Buttons */}
-        <div className="space-y-4">
+        <div className="">
           {/* Register Button */}
           <Link href="/auth/register">
             <button className="w-full py-3 md:py-4 mb-4 rounded-xl text-white font-semibold bg-gradient-to-r from-purple-700 to-purple-900 hover:from-purple-800 hover:to-purple-900 shadow-lg transform hover:scale-105 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">

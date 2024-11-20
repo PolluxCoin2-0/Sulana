@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-// import { useState } from "react";
+import { useEffect, useState } from "react";
 import SilverPool from "../../assests/SilverPool.svg";
 import GoldPool from "../../assests/GoldPool.svg";
 import PlatinumPool from "../../assests/Platnium Pool.svg";
@@ -10,7 +10,15 @@ import SUL from "../../assests/SUL.svg";
 import Stake from "../../assests/Stake.svg";
 import Mint from "../../assests/Mint.svg";
 import MintedTransactions from "./MintedTransactions";
-// import ShimmerEffect from "@/app/components/ShimmerEffect";
+import ShimmerEffect from "@/app/components/ShimmerEffect";
+import { broadcastApi, claimRewardApi, getUserDetailsApi, referralRewardApi, stakeSulBalanceApi } from "@/api/apiFunctions";
+import { useSelector } from "react-redux";
+import { UserDetailsData } from "@/interface";
+import { RootState } from "@/redux/store";
+import { toast } from "react-toastify";
+import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
+import Loader from "../components/Loader";
+import { useRouter } from "next/navigation";
 
 const transactions = [
   {
@@ -58,10 +66,160 @@ const transactions = [
 ];
 
 const DashBoard: React.FC = () => {
-  // const [isComponentLoading, setComponentLoading] = useState <boolean>(false);
-  // if (isComponentLoading) {
-  //   return <ShimmerEffect />;
-  // }
+  const router = useRouter();
+  const userStateData = useSelector((state: RootState)=>state?.wallet);
+  console.log({ userStateData });
+  const [isComponentLoading, setComponentLoading] = useState <boolean>(false);
+  const [isLoading, setIsLoading] = useState <boolean>(false);
+  const [userDetails, setUserDetails] = useState<UserDetailsData | null>(null);
+  const [stakeAmount, setStakeAmount] = useState<string>("");
+  const [referralAmount, setReferralAmount] = useState<number>(0);
+
+  useEffect(()=>{
+    if(userStateData?.isLogin){
+     fetchData();
+    }
+  },[])
+
+  const fetchData = async()=>{
+    setComponentLoading(true);
+    const userDetailsApiData = await getUserDetailsApi(userStateData?.dataObject?.walletAddress as string);
+    console.log({userDetailsApiData});
+    setUserDetails(userDetailsApiData?.data)
+    const referralRewardAPiData = await referralRewardApi(userStateData?.dataObject?.walletAddress as string);
+    console.log({referralRewardAPiData});
+    setReferralAmount(referralRewardAPiData?.data);
+    setComponentLoading(false);
+  }
+  
+  if(!userStateData?.isLogin){
+   router.push("/");
+  }
+
+  if (isComponentLoading) {
+    return <ShimmerEffect />;
+  }
+
+  const handleStakeFunc =async (e: React.MouseEvent<HTMLButtonElement> ): Promise<void> => {
+    e.preventDefault();
+    if(isLoading){
+      toast.warning("Staking in progress");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const stakedData = await stakeSulBalanceApi(userStateData?.dataObject?.walletAddress as string, stakeAmount, userStateData?.dataObject?.referredBy as string);
+      console.log({stakedData});
+      if (!stakedData?.data?.transaction) {
+        toast.error("Claim Reward Failed!");
+        throw new Error("Claim Reward Failed!");
+      }
+
+      if (window.pox) {
+        // SIGN TRANSACTION
+        const signedTransaction = await window.pox.signdata(
+          stakedData?.data?.transaction
+        );
+        console.log({ signedTransaction });
+        if (signedTransaction[2] !== "Sign data Successfully") {
+          toast.error("Sign data failed!");
+          throw new Error("Sign data failed!");
+        }
+
+        // BROADCAST TRANSACTION
+        const parsedSignedTransaction = JSON.parse(signedTransaction[1]);
+        const broadcast = await broadcastApi(
+          parsedSignedTransaction
+        );
+        console.log({ broadcast });
+
+        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
+        const transactionStatus = await checkTransactionStatus(broadcast?.txid);
+        console.log({ transactionStatus });
+        if (transactionStatus !== "SUCCESS") {
+          toast.error("Transaction failed!");
+          throw new Error("Transaction failed!");
+        }
+      }
+      await fetchData();
+      toast.success("Reward claimed successfully");
+    } catch (error) {
+      toast.error("Failed to claim reward");
+      console.error(error);
+    } finally{
+      setIsLoading(false);
+    }
+  }
+
+  const handleClaimRewardFunc = async (e: React.MouseEvent<HTMLButtonElement> ): Promise<void> => {
+    e.preventDefault();
+    if(isLoading){
+      toast.warning("Claiming reward in progress");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const claimRewardData = await claimRewardApi(userStateData?.dataObject?.walletAddress as string);
+      console.log({claimRewardData});
+      if (!claimRewardData?.data?.transaction) {
+        toast.error("Claim Reward Failed!");
+        throw new Error("Claim Reward Failed!");
+      }
+
+      if (window.pox) {
+        // SIGN TRANSACTION
+        const signedTransaction = await window.pox.signdata(
+          claimRewardData?.data?.transaction
+        );
+        console.log({ signedTransaction });
+        if (signedTransaction[2] !== "Sign data Successfully") {
+          toast.error("Sign data failed!");
+          throw new Error("Sign data failed!");
+        }
+
+        // BROADCAST TRANSACTION
+        const parsedSignedTransaction = JSON.parse(signedTransaction[1]);
+        const broadcast = await broadcastApi(
+          parsedSignedTransaction
+        );
+        console.log({ broadcast });
+
+        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
+        const transactionStatus = await checkTransactionStatus(broadcast?.txid);
+        console.log({ transactionStatus });
+        if (transactionStatus !== "SUCCESS") {
+          toast.error("Transaction failed!");
+          throw new Error("Transaction failed!");
+        }
+      }
+      await fetchData();
+      toast.success("Reward claimed successfully");
+    } catch (error) {
+      toast.error("Failed to claim reward");
+      console.error(error);
+    } finally{
+      setIsLoading(false);
+    }
+  }
+
+  const handleReferralLinkCopy = () => {
+    if (userStateData?.dataObject?.walletAddress) {
+      navigator.clipboard.writeText(userStateData?.dataObject?.walletAddress)
+        .then(() => {
+          toast.success("Referral link copied to clipboard");
+        })
+        .catch((error) => {
+          toast.error("Failed to copy referral link");
+          console.error(error);
+        });
+    } else {
+      toast.error("Wallet address is not available");
+    }
+  };
+  
+
   return (
     <div className="min-h-screen bg-black px-2 md:px-4 py-7">
       {/* Referral Link Section */}
@@ -70,9 +228,10 @@ const DashBoard: React.FC = () => {
          py-[18px] px-4 lg:px-8 rounded-xl flex justify-between items-center"
       >
         <p className="text-white font-bold text-base truncate">
-          Referral link: <span className="font-normal">dvlkjvflsdkjvjkssderbh4dnbsfnd54sn5fb4g4</span>
+          Referral link: <span className="font-normal">{userStateData?.dataObject?.walletAddress as string}</span>
         </p>
         <svg
+        onClick={handleReferralLinkCopy}
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -97,7 +256,7 @@ const DashBoard: React.FC = () => {
       {/* Individual Stats */}
       {[{ value: "0.00", text: "Stake Balance", icon: Stake },
         { value: "0.00", text: "Mint Balance", icon: Mint },
-        { value: "0.00", text: "Referral Earnings", icon: "🎉", button: "View" }]
+        { value: referralAmount, text: "Referral Earnings", button: "View" }]
         .map(({ value, text, icon, button }, idx) => (
           <div
             key={idx}
@@ -133,18 +292,32 @@ const DashBoard: React.FC = () => {
       <div className="border border-black bg-gradient-to-r from-[rgba(138,34,179,0.34)] via-[rgba(43,37,90,0.25)] to-[rgba(105,26,139,0.44)] rounded-xl px-6 md:px-8 py-8 md:py-10 flex flex-col justify-between">
         <p className="text-white font-bold text-2xl md:text-3xl">STAKE TOKEN</p>
         <div className="grid grid-cols-[70%,26%] gap-4 my-8 pb-10 border-b border-gray-400 border-opacity-30">
-          <div className="rounded-xl border border-gray-400 border-opacity-30 bg-sul-background px-5 md:px-7 py-3">
-            <p className="text-white font-semibold text-xl md:text-2xl">0.0000</p>
-            <p className="text-[#DFDFDF] text-sm">Enter Amount</p>
+          <div className="rounded-xl border border-gray-400 border-opacity-30 bg-sul-background px-5 md:px-5 py-5">
+          <input
+          value={stakeAmount}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setStakeAmount(e.target.value)
+          }
+          className="w-full h-full rounded-xl bg-transparent outline-none placeholder:text-gray-300 text-white"
+          type="number"
+           placeholder="Enter Amount"
+           />
           </div>
           <div className="flex flex-col items-center justify-center bg-sul-background rounded-xl border border-gray-400 border-opacity-30">
-            <Image src={SUL} alt="sul-image" height={0} width={0} className="w-[20%] md:w-[28%]" priority />
+            <Image src={SUL} alt="sul-image" height={0} width={0} className="w-[20%] md:w-[25%] pt-1" priority />
             <p className="text-white font-medium text-sm md:text-base pt-1">SUL</p>
           </div>
         </div>
-        <button className="mt-1 w-full bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] text-white text-lg md:text-2xl font-semibold px-6 py-3 md:py-4 rounded-2xl transform hover:scale-105 transition-transform delay-200">
+        {
+          isLoading?   <div className="w-full flex justify-center">
+          <Loader />
+        </div> : 
+        <button
+        onClick={handleStakeFunc}
+        className="mt-1 w-full bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] text-white text-lg md:text-2xl font-semibold px-6 py-3 md:py-4 rounded-2xl transform hover:scale-105 transition-transform delay-200">
           STAKE
         </button>
+        }
       </div>
 
       {/* Claim Token Section */}
@@ -164,28 +337,36 @@ const DashBoard: React.FC = () => {
             <p className="text-[#DFDFDF] text-sm">Reward</p>
           </div>
           <div className="flex flex-col items-center justify-center bg-sul-background rounded-xl border border-gray-400 border-opacity-30">
-            <Image src={SUL} alt="sul-image" height={0} width={0} className="w-[20%] md:w-[28%]" priority />
+            <Image src={SUL} alt="sul-image" height={0} width={0} className="w-[20%] md:w-[25%] pt-1" priority />
             <p className="text-white font-medium text-sm md:text-base pt-1">SUL</p>
           </div>
         </div>
-        <button className="mt-1 w-full bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] text-white text-lg md:text-2xl font-semibold px-6 py-3 md:py-4 rounded-2xl transform hover:scale-105 transition-transform delay-200">
+        {
+          isLoading ?   <div className="w-full flex justify-center">
+          <Loader />
+        </div> :
+        <button
+        onClick={handleClaimRewardFunc}
+        className="mt-1 w-full bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] text-white text-lg md:text-2xl font-semibold px-6 py-3 md:py-4 rounded-2xl transform hover:scale-105 transition-transform delay-200">
           CLAIM REWARD
         </button>
+        }
       </div>
     </div>
   </div>
 
   {/* Second Subdiv */}
   <div className="space-y-4 md:space-y-[12px] flex flex-col justify-between">
-    {[{ value: "0.00", text: "Silver Pool", gradient: "bg-silver-pool", imagePath: SilverPool },
-      { value: "0.00", text: "Gold Pool", gradient: "bg-gold-pool", imagePath: GoldPool },
-      { value: "0.00", text: "Platinum Pool", gradient: "bg-platinum-pool", imagePath: PlatinumPool },
-      { value: "0.00", text: "Diamond Pool", gradient: "bg-diamond-pool", imagePath: DiamondPool },
-      { value: "0.00", text: "Crown Diamond Pool", gradient: "bg-crown-diamond-pool", imagePath: CrownDiamondPool }]
-      .map(({ value, text, gradient, imagePath }, idx) => (
+    {[{ value: userDetails?.silverReward, text: "Silver Pool", gradient: "bg-silver-pool", imagePath: SilverPool, isEligible: userDetails?.eligibleForSilverPool },
+      { value: userDetails?.goldReward, text: "Gold Pool", gradient: "bg-gold-pool", imagePath: GoldPool, isEligible: userDetails?.eligibleForGoldPool },
+      { value: userDetails?.platinumReward, text: "Platinum Pool", gradient: "bg-platinum-pool", imagePath: PlatinumPool, isEligible: userDetails?.eligibleForPlatinumPool},
+      { value: userDetails?.diamondReward, text: "Diamond Pool", gradient: "bg-diamond-pool", imagePath: DiamondPool, isEligible: userDetails?.eligibleForDiamondPool},
+      { value: userDetails?.crownDiamondReward, text: "Crown Diamond Pool", gradient: "bg-crown-diamond-pool", imagePath: CrownDiamondPool, isEligible: userDetails?.eligibleForCrownDiamondPool}]
+      .map(({ value, text, gradient, imagePath, isEligible }, idx) => (
         <div
           key={idx}
-          className={`bg-opacity-30 px-4 py-3 lg:py-4 xl:py-[10px] rounded-xl flex items-center justify-between text-white ${gradient}`}
+          className={`bg-opacity-30 px-4 py-3 lg:py-4 xl:py-[10px] rounded-xl flex items-center justify-between text-white
+             ${isEligible? gradient : "bg-gradient-to-r from-gray-700 via-gray-600 to-gray-500"} `}
         >
           <div className="flex flex-col justify-center">
             <span className="text-lg md:text-2xl font-bold">{value}</span>

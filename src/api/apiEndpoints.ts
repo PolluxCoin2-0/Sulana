@@ -6,23 +6,9 @@ const API_ENDPOINTS = {
     user: {
       getBalance: "/getBalanceOf",
       stakeBalance: "/stakeSulaana",
-    },
-    tokenReturns: {
-      userTotalReturns: "/getUserTotalReturn",
-      totalRoiReturns: "/getTotalRoiReturn",
-      totalReferralReturns: "/getUserReferralRewards",
-    },
-    mint: {
-      userMint:"/mint",
-      getMintTime:"/getMintDate",
-      updateMintTime:"/updateMintDate",
-    },
-    DB:{
-      saveToDB : "/createCycle",
-      getFromDB : "/getAllCycles"
-    },
-    referral :{
-      directReferral : "/getAllReferrals",
+      getUserDetails : "/getUser",
+      claimReward : "/claimReward",
+      getReferralRewards : "/getUserReferralRewards",
     },
     transaction:{
       approval:"/approval",

@@ -2,16 +2,31 @@
 import React from "react";
 import Logo from "../../../../assests/LogoWithText.svg";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { setDataObject, setIsLogin } from "@/redux/slice";
+import { toast } from "react-toastify";
 
 const Navbar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
 
   const routesToHideNavbar = ["/", "/login", "/auth/register", "/auth/login"];
   const shouldHideNavbar = routesToHideNavbar.includes(pathname); // Check for exact match
 
   if (shouldHideNavbar) return null;
+
+   // Handle Sign Out
+   const handleSignOut = () => {
+    // Dispatch to reset the state
+    dispatch(setIsLogin(false));
+    dispatch(setDataObject(undefined));
+    // Navigate to home or login page
+    router.push("/");
+    // Show toast message
+    toast.success("Successfully signed out!");
+  };
 
   return (
     <nav className="px-0 md:px-0 lg:px-6 w-full bg-black shadow-[0px_1px_15px_0px_rgba(255,255,255,0.2)] backdrop-blur-sm z-50">
@@ -22,10 +37,12 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* Connect Wallet Button */}
-        <Link href="/" className="whitespace-nowrap bg-gradient-to-r from-[#572EAC] to-[#8922B3] text-sm md:text-base text-white font-medium px-3 md:px-6 py-2 rounded-lg shadow-lg 
+        <button
+        onClick={handleSignOut}
+        className="whitespace-nowrap bg-gradient-to-r from-[#572EAC] to-[#8922B3] text-sm md:text-base text-white font-medium px-3 md:px-6 py-2 rounded-lg shadow-lg 
         hover:scale-105 transition-transform">
-          Connect Wallet
-        </Link>
+         Sign out
+        </button>
       </div>
     </nav>
   );
