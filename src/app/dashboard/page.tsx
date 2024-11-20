@@ -11,7 +11,7 @@ import StakeImg from "../../assests/Stake.svg";
 import Mint from "../../assests/Mint.svg";
 import MintedTransactions from "./MintedTransactions";
 import ShimmerEffect from "@/app/components/ShimmerEffect";
-import { broadcastApi, claimRewardApi, getBalanceApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, userAllStakesApi } from "@/api/apiFunctions";
+import { approvalApi, broadcastApi, claimRewardApi, getBalanceApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, userAllStakesApi } from "@/api/apiFunctions";
 import { useSelector } from "react-redux";
 import { Stake, UserDetailsData } from "@/interface";
 import { RootState } from "@/redux/store";
@@ -19,7 +19,6 @@ import { toast } from "react-toastify";
 import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
 import Loader from "../components/Loader";
 import { useRouter } from "next/navigation";
-import convertToIST from "@/lib/convertToIST";
 
 const transactions = [
   {
@@ -87,6 +86,7 @@ const DashBoard: React.FC = () => {
 
   const fetchData = async()=>{
     setComponentLoading(true);
+    
     // USER DETAILS
     const userDetailsApiData = await getUserDetailsApi(userStateData?.dataObject?.walletAddress as string);
     console.log({userDetailsApiData});
@@ -145,16 +145,50 @@ const DashBoard: React.FC = () => {
          throw new Error("Insufficient Sul.");
        }
 
-      const stakedData = await stakeSulBalanceApi(userStateData?.dataObject?.walletAddress as string, stakeAmount, userStateData?.dataObject?.referredBy as string);
-      console.log({stakedData});
-      if (!stakedData?.data?.transaction) {
-        toast.error("Claim Reward Failed!");
-        throw new Error("Claim Reward Failed!");
+       
+      // APPROVAL
+      const approvalRawData = await approvalApi(userStateData?.dataObject?.walletAddress as string, stakeAmount);
+      console.log("approvalRawData", approvalRawData);
+      if (!approvalRawData?.data?.transaction) {
+        toast.error("Approval Failed!");
+        throw new Error("Approval Failed!");
       }
 
       if (window.pox) {
         // SIGN TRANSACTION
-        const signedTransaction = await window.pox.signdata(
+        const approvedSignedTransaction = await window.pox.signdata(
+          approvalRawData?.data?.transaction
+        );
+        console.log({ approvedSignedTransaction });
+        if (approvedSignedTransaction[2] !== "Sign data Successfully") {
+          toast.error("Sign data failed!");
+          throw new Error("Sign data failed!");
+        }
+
+        // BROADCAST TRANSACTION
+        const parsedApprovedSignedTransaction = JSON.parse(approvedSignedTransaction[1]);
+        const ApprovedBroadcast = await broadcastApi(
+          parsedApprovedSignedTransaction
+        );
+        console.log({ ApprovedBroadcast });
+
+        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
+        const approvedTransactionStatus = await checkTransactionStatus(ApprovedBroadcast?.txid);
+        console.log({ approvedTransactionStatus });
+        if (approvedTransactionStatus !== "SUCCESS") {
+          toast.error("Transaction failed!");
+          throw new Error("Transaction failed!");
+        }
+
+        const stakedData = await stakeSulBalanceApi(userStateData?.dataObject?.walletAddress as string, stakeAmount, userStateData?.dataObject?.referredBy as string);
+        console.log({stakedData});
+        if (!stakedData?.data?.transaction) {
+          toast.error("Claim Reward Failed!");
+          throw new Error("Claim Reward Failed!");
+        }
+
+         // SIGN TRANSACTION
+         const signedTransaction = await window.pox.signdata(
           stakedData?.data?.transaction
         );
         console.log({ signedTransaction });
@@ -177,7 +211,9 @@ const DashBoard: React.FC = () => {
           toast.error("Transaction failed!");
           throw new Error("Transaction failed!");
         }
+
       }
+
       setStakeAmount("");
       await fetchData();
       toast.success("Reward claimed successfully");
@@ -254,10 +290,17 @@ const DashBoard: React.FC = () => {
 
     setIsMintLoading(true);
     try {
+
+      // 24 Hours completed or not
+
        // Create a copy of the staked array to avoid direct mutation
-    const updatedStakedArray = [...stakedArray];
-    updatedStakedArray[index] = { ...updatedStakedArray[index], isLoading: true };
-    setStakedArray(updatedStakedArray);
+       // Update the loading state for the specific item
+    setStakedArray((prevState) => {
+      const updatedState = [...prevState];
+      updatedState[index] = { ...updatedState[index], isLoading: true };
+      return updatedState;
+    });
+    
 
       // CHECK USER HAVE MORE THAN ZERO AMOUNT TO CLAIM THEIR REWARD
       const mintData = await mintUserApi(userStateData?.dataObject?.walletAddress as string, index);
@@ -300,9 +343,11 @@ const DashBoard: React.FC = () => {
       console.error(error);
     } finally{
        // Update the loading flag for the specific item
-    const updatedStakedArray = [...stakedArray];
-    updatedStakedArray[index] = { ...updatedStakedArray[index], isLoading: false };
-    setStakedArray(updatedStakedArray);
+       setStakedArray((prevState) => {
+        const updatedState = [...prevState];
+        updatedState[index] = { ...updatedState[index], isLoading: false };
+        return updatedState;
+      });
     
       setIsMintLoading(false);
     }
@@ -413,7 +458,7 @@ const DashBoard: React.FC = () => {
           </div>
         </div>
         {
-          isStakeLoading?   <div className="w-full flex justify-center">
+          isStakeLoading?   <div className="w-full rounded-xl flex justify-center bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] ">
           <Loader />
         </div> : 
         <button
@@ -446,7 +491,7 @@ const DashBoard: React.FC = () => {
           </div>
         </div>
         {
-          isClaimLoading ?   <div className="w-full flex justify-center">
+          isClaimLoading ?   <div className="w-full rounded-xl flex justify-center bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] ">
           <Loader />
         </div> :
         <button
@@ -505,12 +550,12 @@ const DashBoard: React.FC = () => {
       return (
         <>{
           !item.isUnstaked &&
-       <div className="text-white flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0" key={index}>
+       <div className="text-white flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0 pb-2 border-b border-gray-400 border-opacity-30 last:border-0" key={index}>
     <p className="px-8 py-2 w-[20%] text-left">{item?.amount}</p>
     <p className="px-4 py-2 w-[20%] text-center">{item?.mintCount} / 1000</p>
-    <p className="px-4 py-2 w-[20%] text-left lg:text-center">{convertToIST(item?.startTime,"dd/MM/yyyy, HH:mm:ss")}</p>
+    <p className="px-4 py-2 w-[20%] text-left lg:text-center">{item?.startTime}</p>
     <p className="px-0 lg:px-4 py-2 w-[20%] text-left lg:text-center">
-      {item?.lastMintedAt === "01/01/1970, 05:30:00" ? "First Mint": convertToIST(item?.lastMintedAt,"dd/MM/yyyy, HH:mm:ss")}</p>
+      {item?.lastMintedAt === "01/01/1970, 05:30:00" ? "First Mint": item?.lastMintedAt}</p>
     <div className="lg:w-[20%] px-4 flex justify-end">
       {
        item.isLoading ? <div className="w-full lg:w-[50%] rounded-xl flex justify-center bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] ">
@@ -532,8 +577,6 @@ const DashBoard: React.FC = () => {
     })
   }
 </div>
-
-
       {/* Transaction Table */}
       <p className="font-bold text-white text-3xl mt-8 mb-4 pl-2 ">Transactions</p>
       <MintedTransactions transactions={transactions} />

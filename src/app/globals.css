@@ -33,11 +33,11 @@
 .loading {
   --speed-of-animation: 0.9s;
   --gap: 6px;
-  --first-color: #000000;  /* Your first color */
-  --second-color: #000000; /* Your second color */
-  --third-color: #000000;  /* Your third color */
-  --fourth-color: #000000; /* Your fourth color (same as third) */
-  --fifth-color: #000000;  /* Your fifth color */
+  --first-color: #ffffff;  /* Your first color */
+  --second-color: #ffffff; /* Your second color */
+  --third-color: #ffffff;  /* Your third color */
+  --fourth-color: #ffffff; /* Your fourth color (same as third) */
+  --fifth-color: #ffffff;  /* Your fifth color */
   display: flex;
   justify-content: center;
   align-items: center;

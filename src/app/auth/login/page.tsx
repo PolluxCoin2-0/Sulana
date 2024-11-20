@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import { setDataObject, setIsLogin } from "@/redux/slice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import Loader from "@/app/components/Loader";
 
 const Login: React.FC = () => {
   const router = useRouter();
@@ -93,12 +94,18 @@ const Login: React.FC = () => {
           </Link>
 
           {/* Connect Wallet Button */}
+          {
+            isLoading ?
+            <div className="w-full rounded-xl flex justify-center bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] ">
+            <Loader />
+          </div> :
             <button
-             onClick={handleLogin} 
-             className="w-full py-3 md:py-4 rounded-xl text-black font-semibold bg-white/20 backdrop-blur-lg border border-white/40 hover:bg-white/30 transition duration-300 flex items-center justify-center shadow-lg transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+            onClick={handleLogin} 
+            className="w-full py-3 md:py-4 rounded-xl text-black font-semibold bg-white/20 backdrop-blur-lg border border-white/40 hover:bg-white/30 transition duration-300 flex items-center justify-center shadow-lg transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
               <WalletIcon className="h-6 w-6 mr-2 text-black" />
               Connect Wallet
             </button>
+            }
         </div>
 
         {/* Footer */}

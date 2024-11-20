@@ -328,7 +328,7 @@ const RegistrationPage: React.FC = () => {
             </div>
             {/* Register Button */}
             {isLoading ? (
-              <div className="w-full flex justify-center">
+              <div className="w-full rounded-xl flex justify-center bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] ">
                 <Loader />
               </div>
             ) : (
