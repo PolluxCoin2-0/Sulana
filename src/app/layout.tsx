@@ -5,6 +5,7 @@ import Navbar from "./components/layout/Navbar/page";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ReduxProvider from "@/redux/reduxProvider";
+import { useEffect } from "react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,6 +29,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en">
       <link rel="icon" href="/Logo.svg" type="image/*" />

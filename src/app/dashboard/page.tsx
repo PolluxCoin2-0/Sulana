@@ -1,19 +1,19 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import SilverPool from "../../assests/SilverPool.svg";
-import GoldPool from "../../assests/GoldPool.svg";
-import PlatinumPool from "../../assests/Platnium Pool.svg";
-import DiamondPool from "../../assests/Diamond Pool.svg";
-import CrownDiamondPool from "../../assests/CrownDiamondPool.svg";
-import SUL from "../../assests/SUL.svg";
-import StakeImg from "../../assests/Stake.svg";
-import Mint from "../../assests/Mint.svg";
+import SilverPool from "@/assests/SilverPool.svg";
+import GoldPool from "@/assests/GoldPool.svg";
+import PlatinumPool from "@/assests/Platnium Pool.svg";
+import DiamondPool from "@/assests/Diamond Pool.svg";
+import CrownDiamondPool from "@/assests/CrownDiamondPool.svg";
+import SUL from "@/assests/SUL.svg";
+import StakeImg from "@/assests/Stake.svg";
+import Mint from "@/assests/Mint.svg";
 import MintedTransactions from "./MintedTransactions";
 import ShimmerEffect from "@/app/components/ShimmerEffect";
-import { approvalApi, broadcastApi, claimRewardApi, getBalanceApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, userAllStakesApi } from "@/api/apiFunctions";
+import { approvalApi, broadcastApi, claimRewardApi, createMintWeb2Api, getBalanceApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, userAllStakesApi } from "@/api/apiFunctions";
 import { useSelector } from "react-redux";
-import { Stake, UserDetailsData } from "@/interface";
+import {TransactionInterface, UserDetailsData } from "@/interface";
 import { RootState } from "@/redux/store";
 import { toast } from "react-toastify";
 import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
@@ -76,7 +76,7 @@ const DashBoard: React.FC = () => {
   const [userDetails, setUserDetails] = useState<UserDetailsData | null>(null);
   const [stakeAmount, setStakeAmount] = useState<string>("");
   const [referralAmount, setReferralAmount] = useState<number>(0);
-  const [stakedArray, setStakedArray] = useState<Stake[]>([]);
+  const [stakedArray, setStakedArray] = useState<TransactionInterface[]>([]);
 
   useEffect(()=>{
     if(userStateData?.isLogin){
@@ -98,9 +98,9 @@ const DashBoard: React.FC = () => {
     setReferralAmount(referralRewardAPiData?.data);
 
     // USER ALL STAKES DATA
-    const stakesDataArray = await userAllStakesApi(userStateData?.dataObject?.walletAddress as string);
+    const stakesDataArray = await userAllStakesApi(userStateData?.dataObject?.token as string);
     console.log({stakesDataArray});
-    const updatedStakes = stakesDataArray.data.map((item: Stake) => ({
+    const updatedStakes = stakesDataArray.data.transactions.map((item: TransactionInterface) => ({
       ...item,
       isLoading: false, // Once data is fetched, set isLoading to false
     }));
@@ -281,7 +281,7 @@ const DashBoard: React.FC = () => {
   }
 
   // MINT FUNC
-  const handleMintFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number ): Promise<void> => {
+  const handleMintFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, amount:number ): Promise<void> => {
     e.preventDefault();
     if(isMintLoading){
       toast.warning("Minting in progress");
@@ -335,8 +335,26 @@ const DashBoard: React.FC = () => {
           toast.error("Transaction failed!");
           throw new Error("Transaction failed!");
         }
+
+      // WEB2 CREATE MINT API CALLING FUNCTIONS
+      const web2MintApiData = await createMintWeb2Api(
+        userStateData?.dataObject?.walletAddress as string,
+        broadcast?.txid, 
+        amount, 
+        transactionStatus,
+        userStateData?.dataObject?.token as string)
+        console.log({web2MintApiData})
+
+        if(web2MintApiData?.statusCode!==200){
+          toast.error("Failed transaction");
+          throw new Error("Failed transaction");
+        }
+
+     // UPDATE WEB2 MINT DATA
+
       }
-      await fetchData();
+
+      // await fetchData();
       toast.success("Mint successfully");
     } catch (error) {
       toast.error("Failed to mint!");
@@ -553,7 +571,7 @@ const DashBoard: React.FC = () => {
        <div className="text-white flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0 pb-2 border-b border-gray-400 border-opacity-30 last:border-0" key={index}>
     <p className="px-8 py-2 w-[20%] text-left">{item?.amount}</p>
     <p className="px-4 py-2 w-[20%] text-center">{item?.mintCount} / 1000</p>
-    <p className="px-4 py-2 w-[20%] text-left lg:text-center">{item?.startTime}</p>
+    <p className="px-4 py-2 w-[20%] text-left lg:text-center">{item?.createdAt}</p>
     <p className="px-0 lg:px-4 py-2 w-[20%] text-left lg:text-center">
       {item?.lastMintedAt === "01/01/1970, 05:30:00" ? "First Mint": item?.lastMintedAt}</p>
     <div className="lg:w-[20%] px-4 flex justify-end">
@@ -562,7 +580,7 @@ const DashBoard: React.FC = () => {
         <Loader />
       </div> : 
       <button
-      onClick={(e)=>handleMintFunc(e,index)}
+      onClick={(e)=>handleMintFunc(e,index, item?.amount)}
       className="w-full lg:w-[50%] bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] 
       text-white text-lg font-semibold px-4 py-2 rounded-xl transform hover:scale-105 transition delay-300"
       >

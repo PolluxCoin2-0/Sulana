@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { WalletIcon } from "@heroicons/react/24/outline";
-import Logo from "../../../assests/LogoWithText.svg"; // Adjust logo path as needed
+import Logo from "@/assests/LogoWithText.svg"; // Adjust logo path as needed
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { getPolinkweb } from "@/lib/connectWallet";

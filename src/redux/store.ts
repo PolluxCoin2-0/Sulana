@@ -5,6 +5,7 @@ import storageSession from "redux-persist/lib/storage/session";
 
 // Configuration for persisting walletReducer in session storage
 const persistConfigSession = {
+  timeout:100,
   key: "wallet",
   storage: storageSession,
 };

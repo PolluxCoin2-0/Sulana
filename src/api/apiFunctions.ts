@@ -1,11 +1,11 @@
 import { 
-  // getRequest,
+  getRequest,
    postRequest, 
   // putRequest
  } from "./apiGenericMethods";
 import API_ENDPOINTS from "./apiEndpoints"; // Import the API endpoints
 import axios from "axios";
-import { BroadcastResponse, getbalanceInterface, LoginApiResponse, referralRewardInterface, registerInterface, stakeBalanceInterface, Transaction,userAllStakesResponseInterface,userDetailsInterface } from "@/interface";
+import { BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, LoginApiResponse, referralRewardInterface, registerInterface, stakeBalanceInterface, Transaction,userDetailsInterface, web2CreateMintInterface } from "@/interface";
 
 const FULL_NODE_TRANSACTION_URL = process.env.NEXT_PUBLIC_FULL_NODE_TRANSACTION_URL || "";
 
@@ -65,11 +65,23 @@ export const referralRewardApi = async (walletAddress:string): Promise<referralR
 }
 
 // GET USER ALL STAKES
-export const userAllStakesApi = async (walletAddress:string): Promise<userAllStakesResponseInterface> =>{
-  return postRequest<userAllStakesResponseInterface>(API_ENDPOINTS.user.getAllUserStakes,{walletAddress},"");
+export const userAllStakesApi = async (token:string): Promise<getAllStakesResponseInterface> =>{
+  return getRequest<getAllStakesResponseInterface>(API_ENDPOINTS.web2.getAllStakes,token,"");
 }
 
 // MINT USER
 export const mintUserApi = async (walletAddress:string, stakeIndex:number): Promise<stakeBalanceInterface> =>{
   return postRequest<stakeBalanceInterface>(API_ENDPOINTS.user.mintUser,{walletAddress, stakeIndex},"");
 }
+
+// CHECK USER EXISTED OR NOT
+export const checkUserExistedApi = async (walletAddress:string, referredBy:string): Promise<checkUserExistedInterface> =>{
+  return postRequest<checkUserExistedInterface>(API_ENDPOINTS.user.checkUserExistOrNot,{walletAddress, referredBy},"");
+}
+
+// WEB2 CREATE MINT API
+export const createMintWeb2Api = async (walletAddress:string,trxId:string, amount:number, status:string, token:string): Promise<web2CreateMintInterface> =>{
+  return postRequest<web2CreateMintInterface>(API_ENDPOINTS.web2.createMint,{walletAddress, trxId, amount, status},token);
+}
+
+

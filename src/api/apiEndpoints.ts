@@ -9,8 +9,17 @@ const API_ENDPOINTS = {
       getUserDetails : "/getUser",
       claimReward : "/claimReward",
       getReferralRewards : "/getUserReferralRewards",
-      getAllUserStakes : "/getAllUserStakes",
       mintUser :"/mintForUser",
+      checkUserExistOrNot: "/checkUserExistOrNot",
+    },
+    web2:{
+      createStake:"/createStake",
+      createMint :"/createMint",
+      createClaim : "/createReward",
+      updateStakeById:"/updateStakeById",
+      getAllUserMintTrx:"/getAllUserMintTrx",
+      getAllUserRewardTrx :"/getAllUserRewardTrx",
+      getAllStakes:"/getAllStakes",
     },
     transaction:{
       approval:"/approval",

@@ -11,12 +11,13 @@ import { toast } from "react-toastify";
 import {
   approvalApi,
   broadcastApi,
+  checkUserExistedApi,
   getBalanceApi,
   registerApi,
   stakeSulBalanceApi,
 } from "@/api/apiFunctions";
 import { checkStakeBalance } from "@/lib/checkStakeBalance";
-import Loader from "../../components/Loader";
+import Loader from "@/app/components/Loader";
 import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
@@ -74,6 +75,25 @@ const RegistrationPage: React.FC = () => {
         setIsLoading(false);
         return;
       }
+
+    // CHECK USER IS ALREADY REGISTERED OR NOT AND ENTERED REFERRAL ADDRESS IS VALID OR NOT
+    const checkUserExistedApiData = await checkUserExistedApi(userWalletAddress, referralAddress);
+    console.log("checkUserExistedApiData", checkUserExistedApiData);
+    
+    if(checkUserExistedApiData?.statusCode!==200){
+      toast.error("Internal server error!");
+      throw new Error("Internal server error!");
+    }
+
+     if(checkUserExistedApiData?.data === "Wallet address Already Exist"){
+      toast.error("Wallet address already registered!");
+      throw new Error("Wallet address already registered!");
+     }
+
+     if(checkUserExistedApiData?.data === "Invalid Referral Code") {
+      toast.error("Invalid Referral Code!");
+      throw new Error("Invalid Referral Code!");
+     }
 
       //  CHECK USER HAVE 200 POX IS STAKED OR NOT
       const isStakeSufficient = await checkStakeBalance(userWalletAddress);
@@ -247,7 +267,7 @@ const RegistrationPage: React.FC = () => {
               To earn{" "}
               <span className="font-semibold text-black">referral income</span>,
               you must stake a minimum of
-              <span className="font-bold text-purple-600"> $200 POX </span>
+              <span className="font-bold text-purple-600"> $200 SUL </span>
               tokens.
             </p>
             <div className="mt-6 flex justify-center w-full">
