@@ -14,6 +14,7 @@ const API_ENDPOINTS = {
       getClaimRewardAmount : "/getUserTotalRewards",
       unstake: "/unstake",
       getDirectBonus :"/getDirectBonus",
+      getClaimedRewards : "/getClaimedRewards",
     },
     web2:{
       createStake:"/createStake",
@@ -21,7 +22,7 @@ const API_ENDPOINTS = {
       createClaim : "/createReward",
       updateStakeById:"/updateStakeById",
       getAllUserMintTrx:"/getAllUserMintTrx",
-      getAllUserRewardTrx :"/getAllUserRewardTrx",  ////////////
+      getAllUserRewardTrx :"/getAllUserRewardTrx",
       getAllStakes:"/getAllStakes",
       getAllUserCount:"/getAllUserCount",
     },

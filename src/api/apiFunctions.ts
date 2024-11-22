@@ -126,3 +126,12 @@ export const getDirectBonusApi = async (walletAddress:string): Promise<referralR
   return postRequest<referralRewardInterface>(API_ENDPOINTS.user.getDirectBonus,{walletAddress});
 }
 
+// WEB2 GET ALL USERS CLAIM REWARDS TRANSACTIONS
+export const claimRewardTransactionWeb2Api = async (token:string): Promise<getAllStakesResponseInterface> =>{
+  return getRequest<getAllStakesResponseInterface>(API_ENDPOINTS.web2.getAllUserRewardTrx,token);
+}
+
+// GET USER TOTAL CLAIM REWARD AMOUNT
+export const getTotalClaimRewwardApi = async (walletAddress:string): Promise<referralRewardInterface> =>{
+  return postRequest<referralRewardInterface>(API_ENDPOINTS.user.getClaimedRewards,{walletAddress});
+}

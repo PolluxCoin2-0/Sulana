@@ -523,7 +523,7 @@ const DashBoard: React.FC = () => {
         <div className="flex justify-between items-center">
           <p className="text-white font-bold text-2xl md:text-3xl">CLAIM TOKEN</p>
           <div className="flex items-center space-x-1 cursor-pointer">
-            <p className="text-white text-xs md:text-sm font-thin">View Rewards</p>
+            <Link href="/ClaimReward" className="text-white text-xs md:text-sm font-thin">View Rewards</Link>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 4.5l7.5 7.5-7.5 7.5m6-15l7.5 7.5-7.5 7.5" />
             </svg>

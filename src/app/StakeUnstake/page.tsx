@@ -8,13 +8,18 @@ import { useSelector } from "react-redux";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
+import { useRouter } from "next/navigation";
+import ShimmerEffect from "../components/ShimmerEffect";
 
 const StakeUnstakePage: React.FC = () => {
+  const router = useRouter();
+  const [isComponentLoading, setComponentLoading] = useState <boolean>(false);
   const userStateData = useSelector((state: RootState)=>state?.wallet);
   const [allStakedArray, setAllStakedArray] = useState<TransactionInterface[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchData = async()=>{
+    setComponentLoading(true);
     const stakesDataArray = await userAllStakesApi(userStateData?.dataObject?.token as string);
     console.log({stakesDataArray});
     const updatedStakes = stakesDataArray.data.transactions.map((item: TransactionInterface) => ({
@@ -23,6 +28,7 @@ const StakeUnstakePage: React.FC = () => {
     }));
     console.log("page stakeUnstake",updatedStakes);
     setAllStakedArray(updatedStakes);
+    setComponentLoading(false);
   }
 
   useEffect(()=>{
@@ -30,6 +36,15 @@ const StakeUnstakePage: React.FC = () => {
      fetchData();
     }
   },[])
+
+  if(!userStateData?.isLogin){
+    router.push("/");
+   }
+ 
+   if (isComponentLoading) {
+     return <ShimmerEffect />;
+   }
+
 
   const handleUnstakeFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, ): Promise<void> => {
     e.preventDefault();
