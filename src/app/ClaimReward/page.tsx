@@ -1,6 +1,6 @@
 "use client";
 import { claimRewardTransactionWeb2Api, getTotalClaimRewwardApi } from "@/api/apiFunctions";
-import { MintTransactionInterface, TransactionInterface } from "@/interface";
+import { TransactionInterface } from "@/interface";
 import { RootState } from "@/redux/store";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 import ShimmerEffect from "../components/ShimmerEffect";
 import { useRouter } from "next/navigation";
 
-const ClaimReward: React.FC<{ transactions: MintTransactionInterface[] }> = () => {
+const ClaimReward: React.FC= () => {
   const router = useRouter();
     const userStateData = useSelector((state: RootState)=>state?.wallet);
     const [isComponentLoading, setComponentLoading] = useState <boolean>(false);
