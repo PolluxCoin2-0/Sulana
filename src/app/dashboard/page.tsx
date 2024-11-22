@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import Bonus from "@/assests/Bonus.svg";
 import SilverPool from "@/assests/SilverPool.svg";
 import GoldPool from "@/assests/GoldPool.svg";
 import PlatinumPool from "@/assests/Platnium Pool.svg";
@@ -11,59 +12,15 @@ import StakeImg from "@/assests/Stake.svg";
 import Mint from "@/assests/Mint.svg";
 import MintedTransactions from "./MintedTransactions";
 import ShimmerEffect from "@/app/components/ShimmerEffect";
-import { approvalApi, broadcastApi, claimRewardApi, createMintWeb2Api, getBalanceApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, userAllStakesApi } from "@/api/apiFunctions";
+import { allMintTransactionWeb2Api, approvalApi, broadcastApi, claimRewardAmountApi, claimRewardApi, createClaimRewardWeb2Api, createMintWeb2Api, createStakeTransactionWeb2Api, getAllUserCountWeb2Api, getBalanceApi, getDirectBonusApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, updateStakeByIdWeb2Api, userAllStakesApi } from "@/api/apiFunctions";
 import { useSelector } from "react-redux";
-import {TransactionInterface, UserDetailsData } from "@/interface";
+import {MintTransactionInterface, TransactionInterface, UserDetailsData } from "@/interface";
 import { RootState } from "@/redux/store";
 import { toast } from "react-toastify";
 import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
 import Loader from "../components/Loader";
 import { useRouter } from "next/navigation";
-
-const transactions = [
-  {
-    amount: "100.00",
-    mintRatio: "1:1",
-    investDate: "2024-11-17",
-    lastMint: "2024-11-15",
-    mintReward: "10.00",
-  },
-  {
-    amount: "200.00",
-    mintRatio: "1:2",
-    investDate: "2024-11-10",
-    lastMint: "2024-11-12",
-    mintReward: "20.00",
-  },
-  {
-    amount: "200.00",
-    mintRatio: "1:2",
-    investDate: "2024-11-10",
-    lastMint: "2024-11-12",
-    mintReward: "20.00",
-  },
-  {
-    amount: "200.00",
-    mintRatio: "1:2",
-    investDate: "2024-11-10",
-    lastMint: "2024-11-12",
-    mintReward: "20.00",
-  },
-  {
-    amount: "200.00",
-    mintRatio: "1:2",
-    investDate: "2024-11-10",
-    lastMint: "2024-11-12",
-    mintReward: "20.00",
-  },
-  {
-    amount: "200.00",
-    mintRatio: "1:2",
-    investDate: "2024-11-10",
-    lastMint: "2024-11-12",
-    mintReward: "20.00",
-  },
-];
+import Link from "next/link";
 
 const DashBoard: React.FC = () => {
   const router = useRouter();
@@ -77,6 +34,10 @@ const DashBoard: React.FC = () => {
   const [stakeAmount, setStakeAmount] = useState<string>("");
   const [referralAmount, setReferralAmount] = useState<number>(0);
   const [stakedArray, setStakedArray] = useState<TransactionInterface[]>([]);
+  const [mintTrxDataArray, setMintTrxDataArray] = useState<MintTransactionInterface[]>([]);
+  const [claimRewardAmount, setClaimRewardAmount] = useState<number>(0);
+  const [allUserCount ,  setAllUserCount] = useState<number>(0);
+  const [directBonus, setDirectBonus] = useState<number>(0);
 
   useEffect(()=>{
     if(userStateData?.isLogin){
@@ -106,6 +67,26 @@ const DashBoard: React.FC = () => {
     }));
     console.log({updatedStakes});
     setStakedArray(updatedStakes);
+
+    // GET ALL MINT TRANSACTIONS DATA WEB2
+    const allMintTrxWeb2ApiData = await allMintTransactionWeb2Api(userStateData?.dataObject?.token as string);
+    console.log({allMintTrxWeb2ApiData});
+    setMintTrxDataArray(allMintTrxWeb2ApiData?.data?.transactions)
+
+    // GET ALL CLAIM REWARD AMOUNT
+    const claimRewardApiData = await claimRewardAmountApi(userStateData?.dataObject?.walletAddress as string);
+    console.log({claimRewardApiData});
+    setClaimRewardAmount(claimRewardApiData?.data);
+
+    // GET ALL USER COUNT
+    const userCountDataApi = await getAllUserCountWeb2Api();
+    console.log({userCountDataApi});
+    setAllUserCount(userCountDataApi?.data);
+
+    // GET DIRECT BONUS 
+    const bonusData = await getDirectBonusApi(userStateData?.dataObject?.walletAddress as string);
+    console.log({bonusData});
+    setDirectBonus(bonusData?.data);
     setComponentLoading(false);
   }
   
@@ -212,6 +193,19 @@ const DashBoard: React.FC = () => {
           throw new Error("Transaction failed!");
         }
 
+      // CREATE STAKE TRANSACTION WEB2 API
+      const web2CreateStakeApiData = await createStakeTransactionWeb2Api(
+        userStateData?.dataObject?.walletAddress as string,
+        broadcast?.txid,
+        parseInt(stakeAmount),
+        transactionStatus,
+        userStateData?.dataObject?._id as string);
+
+        if(web2CreateStakeApiData?.statusCode!==200){
+          throw new Error("Web2 create stake api failed!");
+        }
+
+        console.log({web2CreateStakeApiData})
       }
 
       setStakeAmount("");
@@ -235,6 +229,11 @@ const DashBoard: React.FC = () => {
 
     setIsClaimLoading(true);
     try {
+
+      if(claimRewardAmount<=0){
+        toast.error("Insufficient Amount!");
+        throw new Error("Insufficient Amount!");
+      }
 
       // CHECK USER HAVE MORE THAN ZERO AMOUNT TO CLAIM THEIR REWARD
       const claimRewardData = await claimRewardApi(userStateData?.dataObject?.walletAddress as string);
@@ -269,6 +268,19 @@ const DashBoard: React.FC = () => {
           toast.error("Transaction failed!");
           throw new Error("Transaction failed!");
         }
+
+        // CREATE WEB2 CLAIM API
+        const claimRewardWeb2ApiData = await createClaimRewardWeb2Api(
+          userStateData?.dataObject?.walletAddress as string,
+          broadcast?.txid, 
+          claimRewardAmount, 
+          transactionStatus,
+          userStateData?.dataObject?.token as string
+        )
+        if(!claimRewardWeb2ApiData?.data){
+          throw new Error("Create claim reward web2 api failed!");
+        }
+        console.log({ claimRewardWeb2ApiData });
       }
       await fetchData();
       toast.success("Reward claimed successfully");
@@ -281,7 +293,7 @@ const DashBoard: React.FC = () => {
   }
 
   // MINT FUNC
-  const handleMintFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, amount:number ): Promise<void> => {
+  const handleMintFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, amount:number, userID:string ): Promise<void> => {
     e.preventDefault();
     if(isMintLoading){
       toast.warning("Minting in progress");
@@ -293,7 +305,6 @@ const DashBoard: React.FC = () => {
 
       // 24 Hours completed or not
 
-       // Create a copy of the staked array to avoid direct mutation
        // Update the loading state for the specific item
     setStakedArray((prevState) => {
       const updatedState = [...prevState];
@@ -346,15 +357,20 @@ const DashBoard: React.FC = () => {
         console.log({web2MintApiData})
 
         if(web2MintApiData?.statusCode!==200){
-          toast.error("Failed transaction");
-          throw new Error("Failed transaction");
+          throw new Error("Save to DB Web2 Api Failed transaction");
         }
 
      // UPDATE WEB2 MINT DATA
+     const web2updateStakeDataApi = await updateStakeByIdWeb2Api(userID);
+     console.log({web2updateStakeDataApi});
 
+     
+     if(web2updateStakeDataApi?.statusCode!==200){
+      throw new Error("Web2 Update Stake APi Failed transaction");
+    }
       }
 
-      // await fetchData();
+      await fetchData();
       toast.success("Mint successfully");
     } catch (error) {
       toast.error("Failed to mint!");
@@ -389,7 +405,9 @@ const DashBoard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black px-2 md:px-4 py-7">
-      {/* Referral Link Section */}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Referral Link Section */}
       <div
         className="bg-[linear-gradient(90.11deg,rgba(137,34,179,0.264)_0.11%,rgba(43,37,90,0.1782)_47.67%,rgba(105,26,139,0.264)_99.92%)]
          py-[18px] px-4 lg:px-8 rounded-xl flex justify-between items-center"
@@ -414,26 +432,39 @@ const DashBoard: React.FC = () => {
         </svg>
       </div>
 
+      {/* TOTAL USER */}
+      <div
+        className="bg-[linear-gradient(90.11deg,rgba(137,34,179,0.264)_0.11%,rgba(43,37,90,0.1782)_47.67%,rgba(105,26,139,0.264)_99.92%)]
+         py-[18px] px-4 lg:px-8 rounded-xl flex justify-between items-center"
+      >
+        <p className="text-white font-bold text-base truncate">
+        Total Users :
+        </p>
+        <p className="text-white font-bold text-base">{allUserCount}</p>
+      </div>
+      </div>
+
       {/* Main Content Section */}
       <div className="py-8 rounded-lg grid gap-6 lg:grid-cols-[78%,20%] md:grid-cols-1">
   {/* First Subdiv */}
   <div className="space-y-5 flex flex-col">
     {/* Stats Section */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       {/* Individual Stats */}
       {[{ value: userDetails?.depositAmount, text: "Stake Balance", icon: StakeImg },
         { value: userDetails?.totalROI, text: "Mint Balance", icon: Mint },
+        { value: directBonus, text: "Direct Bonus", icon: Bonus},
         { value: referralAmount, text: "Referral Earnings", button: "View" }]
         .map(({ value, text, icon, button }, idx) => (
           <div
             key={idx}
             className="bg-gradient-to-b from-[rgba(43,37,90,0.67)] to-[rgba(200,200,200,0.67)] px-6 py-3 rounded-xl flex flex-row justify-between items-center"
           >
-            <div className="flex flex-col space-y-1 justify-start">
+            <div className="flex flex-col space-y-0 justify-start">
               <span className="text-2xl md:text-3xl font-bold text-white">
                 {value}
               </span>
-              <span className="text-xs md:text-sm text-gray-300">{text}</span>
+              <span className="text-xs md:text-base font-medium text-gray-300">{text}</span>
             </div>
             {!button && (
               <Image
@@ -500,8 +531,8 @@ const DashBoard: React.FC = () => {
         </div>
         <div className="grid grid-cols-[70%,26%] gap-4 my-8 pb-10 border-b border-gray-400 border-opacity-30">
           <div className="rounded-xl border border-gray-400 border-opacity-30 bg-sul-background px-5 md:px-7 py-3">
-            <p className="text-white font-semibold text-xl md:text-2xl">10.000</p>
-            <p className="text-[#DFDFDF] text-sm">Reward</p>
+            <p className="text-white font-semibold text-xl md:text-2xl">{claimRewardAmount}</p>
+            <p className="text-[#DFDFDF] text-sm opacity-70">Reward</p>
           </div>
           <div className="flex flex-col items-center justify-center bg-sul-background rounded-xl border border-gray-400 border-opacity-30">
             <Image src={SUL} alt="sul-image" height={0} width={0} className="w-[20%] md:w-[25%] pt-1" priority />
@@ -568,19 +599,19 @@ const DashBoard: React.FC = () => {
       return (
         <>{
           !item.isUnstaked &&
-       <div className="text-white flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0 pb-2 border-b border-gray-400 border-opacity-30 last:border-0" key={index}>
+       <Link href={`https://poxscan.io/transactions-detail/${item?.trxId}`} className="text-white flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0 pb-2 border-b border-gray-400 border-opacity-30 last:border-0" key={item?._id}>
     <p className="px-8 py-2 w-[20%] text-left">{item?.amount}</p>
     <p className="px-4 py-2 w-[20%] text-center">{item?.mintCount} / 1000</p>
-    <p className="px-4 py-2 w-[20%] text-left lg:text-center">{item?.createdAt}</p>
+    <p className="px-4 py-2 w-[20%] text-left lg:text-center">{new Date(item?.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
     <p className="px-0 lg:px-4 py-2 w-[20%] text-left lg:text-center">
-      {item?.lastMintedAt === "01/01/1970, 05:30:00" ? "First Mint": item?.lastMintedAt}</p>
+      {item?.lastMintedAt === "01/01/1970, 05:30:00" ? "First Mint": new Date(item?.lastMintedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
     <div className="lg:w-[20%] px-4 flex justify-end">
       {
        item.isLoading ? <div className="w-full lg:w-[50%] rounded-xl flex justify-center bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] ">
         <Loader />
       </div> : 
       <button
-      onClick={(e)=>handleMintFunc(e,index, item?.amount)}
+      onClick={(e)=>handleMintFunc(e,index, item?.amount, item?._id)}
       className="w-full lg:w-[50%] bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] 
       text-white text-lg font-semibold px-4 py-2 rounded-xl transform hover:scale-105 transition delay-300"
       >
@@ -588,7 +619,7 @@ const DashBoard: React.FC = () => {
       </button>
         }
     </div>
-  </div>
+  </Link>
       }
         </>
       )
@@ -597,7 +628,7 @@ const DashBoard: React.FC = () => {
 </div>
       {/* Transaction Table */}
       <p className="font-bold text-white text-3xl mt-8 mb-4 pl-2 ">Transactions</p>
-      <MintedTransactions transactions={transactions} />
+      <MintedTransactions transactions={mintTrxDataArray} />
     </div>
   );
 };

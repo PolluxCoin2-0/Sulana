@@ -8,6 +8,7 @@ import { setDataObject, setIsLogin } from "@/redux/slice";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import Link from "next/link";
 
 const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -71,7 +72,7 @@ const Navbar: React.FC = () => {
     <nav className="px-0 md:px-0 lg:px-6 w-full bg-black shadow-[0px_1px_15px_0px_rgba(255,255,255,0.2)] backdrop-blur-sm z-50">
       <div className=" mx-auto px-4 py-4 flex justify-between items-center">
         {/* Logo */}
-        <div className="text-white font-bold text-lg">
+        <Link href="/dashboard" className="text-white font-bold text-lg">
           <Image
             src={Logo}
             alt="sulmine-logo"
@@ -79,12 +80,12 @@ const Navbar: React.FC = () => {
             height={0}
             className="w-[70%] md:w-[60%]"
           />
-        </div>
+        </Link>
 
         <div className="flex items-center space-x-2 md:space-x-8">
-          <p className="text-white font-bold text-base md:text-xl cursor-pointer">
+          <Link href="/StakeUnstake" className="text-white font-bold text-base md:text-xl cursor-pointer">
             Unstake
-          </p>
+          </Link>
           {/* Connect Wallet Button */}
           <button
             onClick={handleSignOut}

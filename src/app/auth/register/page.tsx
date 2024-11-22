@@ -12,6 +12,7 @@ import {
   approvalApi,
   broadcastApi,
   checkUserExistedApi,
+  createStakeTransactionWeb2Api,
   getBalanceApi,
   registerApi,
   stakeSulBalanceApi,
@@ -192,9 +193,8 @@ const RegistrationPage: React.FC = () => {
           toast.error("Transaction failed!");
           throw new Error("Transaction failed!");
         }
-      }
 
-      // Call the API to register the user with the wallet address and referral address
+         // Call the API to register the user with the wallet address and referral address
       const registerApiResponseData = await registerApi(
         userWalletAddress,
         sulAmount,
@@ -215,6 +215,24 @@ const RegistrationPage: React.FC = () => {
         toast.error("Registration failed!");
         throw new Error("Registration failed!");
       }
+
+      if (typeof registerApiResponseData.data === "object") {
+        // CREATE STAKE TRANSACTION WEB2 API
+        const web2CreateStakeApiData = await createStakeTransactionWeb2Api(
+        userWalletAddress,
+        stakedBroadcast?.txid,
+        parseInt(sulAmount),
+        stakedTransactionStatus,
+        registerApiResponseData?.data?.id);
+
+        if(web2CreateStakeApiData?.statusCode!==200){
+          throw new Error("Web2 create stake api failed!");
+        }
+
+        console.log({web2CreateStakeApiData})
+      }
+      }
+
       toast.success("Registration Success");
       router.push("/");
     } catch (error) {

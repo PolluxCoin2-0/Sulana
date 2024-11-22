@@ -7,8 +7,24 @@ interface getbalanceInterface {
   data: number;
 }
 
+interface registerDataInterface {
+  walletAddress: string,
+  depositAmount: number,
+  referralCode: string,
+  referredBy: string,
+  deviceType: string,
+  deviceToken: string,
+  isDeleted: boolean,
+  isBlocked: boolean,
+  _id: string,
+  createdAt: string,
+  updatedAt: string,
+  __v: number,
+  id: string,
+}
+
 interface registerInterface {
-  data: object | string;
+  data: registerDataInterface | string;
   message: string;
   statusCode: number;
 }
@@ -141,6 +157,60 @@ interface web2CreateMintInterface {
   message: string;
 }
 
+ interface UpdateStakeResponseInterface {
+  data: {
+    success: boolean;
+    data: StakeData;
+    message: string;
+  };
+  statusCode: number;
+  message: string;
+}
+
+ interface StakeData {
+  _id: string;
+  userId: string;
+  trxId: string;
+  walletAddress: string;
+  amount: number;
+  status: string; // Consider using a union type for possible values, e.g., "success" | "failed"
+  mintCount: number;
+  maturityDuration: string; // ISO 8601 date string
+  beforeMaturityDuration: string; // ISO 8601 date string
+  isUnstaked: boolean;
+  isDeleted: boolean;
+  lastMintedAt: string; // ISO 8601 date string
+  createdAt: string; // ISO 8601 date string
+  updatedAt: string; // ISO 8601 date string
+  __v: number;
+  id: string;
+}
+
+ interface allMintTransactionResponseInterface {
+  data: MintTransactionDataInterface;
+  statusCode: number;
+  message: string;
+}
+
+ interface MintTransactionDataInterface {
+  transactionCount: number;
+  transactions: MintTransactionInterface[];
+}
+
+ interface MintTransactionInterface {
+  _id: string;
+  trxId: string;
+  walletAddress: string;
+  amount: number;
+  status: string; // Consider a union type like "success" | "failed" | "pending"
+  createdAt: string; // ISO 8601 date string
+}
+
+interface allCountUser {
+  data: number,
+  statusCode: number,
+  message: string,
+}
 
 export type {
   LoginApiResponse,
@@ -158,4 +228,10 @@ export type {
   checkUserExistedInterface,
   web2CreateMintInterface,
   getAllStakesResponseInterface,
+  UpdateStakeResponseInterface,
+  StakeData,
+  allMintTransactionResponseInterface,
+  MintTransactionDataInterface,
+  MintTransactionInterface,
+  allCountUser,
 };

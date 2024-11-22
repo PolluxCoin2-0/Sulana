@@ -11,6 +11,9 @@ const API_ENDPOINTS = {
       getReferralRewards : "/getUserReferralRewards",
       mintUser :"/mintForUser",
       checkUserExistOrNot: "/checkUserExistOrNot",
+      getClaimRewardAmount : "/getUserTotalRewards",
+      unstake: "/unstake",
+      getDirectBonus :"/getDirectBonus",
     },
     web2:{
       createStake:"/createStake",
@@ -18,8 +21,9 @@ const API_ENDPOINTS = {
       createClaim : "/createReward",
       updateStakeById:"/updateStakeById",
       getAllUserMintTrx:"/getAllUserMintTrx",
-      getAllUserRewardTrx :"/getAllUserRewardTrx",
+      getAllUserRewardTrx :"/getAllUserRewardTrx",  ////////////
       getAllStakes:"/getAllStakes",
+      getAllUserCount:"/getAllUserCount",
     },
     transaction:{
       approval:"/approval",

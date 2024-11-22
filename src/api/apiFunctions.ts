@@ -1,11 +1,11 @@
 import { 
   getRequest,
    postRequest, 
-  // putRequest
+  putRequest
  } from "./apiGenericMethods";
 import API_ENDPOINTS from "./apiEndpoints"; // Import the API endpoints
 import axios from "axios";
-import { BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, LoginApiResponse, referralRewardInterface, registerInterface, stakeBalanceInterface, Transaction,userDetailsInterface, web2CreateMintInterface } from "@/interface";
+import { allCountUser, allMintTransactionResponseInterface, BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, LoginApiResponse, referralRewardInterface, registerInterface, stakeBalanceInterface, Transaction,UpdateStakeResponseInterface,userDetailsInterface, web2CreateMintInterface } from "@/interface";
 
 const FULL_NODE_TRANSACTION_URL = process.env.NEXT_PUBLIC_FULL_NODE_TRANSACTION_URL || "";
 
@@ -64,9 +64,9 @@ export const referralRewardApi = async (walletAddress:string): Promise<referralR
   return postRequest<referralRewardInterface>(API_ENDPOINTS.user.getReferralRewards,{walletAddress},"");
 }
 
-// GET USER ALL STAKES
-export const userAllStakesApi = async (token:string): Promise<getAllStakesResponseInterface> =>{
-  return getRequest<getAllStakesResponseInterface>(API_ENDPOINTS.web2.getAllStakes,token,"");
+// GET USER REFERRAL REWARD
+export const claimRewardAmountApi = async (walletAddress:string): Promise<referralRewardInterface> =>{
+  return postRequest<referralRewardInterface>(API_ENDPOINTS.user.getClaimRewardAmount,{walletAddress},"");
 }
 
 // MINT USER
@@ -84,4 +84,45 @@ export const createMintWeb2Api = async (walletAddress:string,trxId:string, amoun
   return postRequest<web2CreateMintInterface>(API_ENDPOINTS.web2.createMint,{walletAddress, trxId, amount, status},token);
 }
 
+// WEB2 CREATE CLAIM REWARD API
+export const createClaimRewardWeb2Api = async (walletAddress:string,trxId:string, amount:number, status:string, token:string): Promise<web2CreateMintInterface> =>{
+  return postRequest<web2CreateMintInterface>(API_ENDPOINTS.web2.createClaim,{walletAddress, trxId, amount, status},token);
+}
+
+// WEB2 UPDATE STAKE BY ID API 
+export const updateStakeByIdWeb2Api = async (userId:string): Promise<UpdateStakeResponseInterface> =>{
+  return putRequest<UpdateStakeResponseInterface>(  `${API_ENDPOINTS.web2.updateStakeById}/${userId}`);
+}
+
+// WEB2 MINT TRANSACTION API
+export const allMintTransactionWeb2Api = async (token:string): Promise<allMintTransactionResponseInterface> =>{
+  return getRequest<allMintTransactionResponseInterface>(API_ENDPOINTS.web2.getAllUserMintTrx, token);
+}
+
+// WEB2 CREATE STAKE TRANSACTION API
+export const createStakeTransactionWeb2Api = async (walletAddress:string,trxId:string, amount:number, status:string, userId:string): Promise<web2CreateMintInterface> =>{
+  console.log("Request URL:", `${API_ENDPOINTS.web2.createStake}/${userId}`);
+console.log("Request Payload:", { walletAddress, trxId, amount, status });
+  return postRequest<web2CreateMintInterface>(`${API_ENDPOINTS.web2.createStake}/${userId}`,{walletAddress, trxId, amount, status},);
+}
+
+// WEB2 GET USER ALL STAKES
+export const userAllStakesApi = async (token:string): Promise<getAllStakesResponseInterface> =>{
+  return getRequest<getAllStakesResponseInterface>(API_ENDPOINTS.web2.getAllStakes,token,"");
+}
+
+// UNSTAKE API
+export const unstakeApi = async (walletAddress:string, stakeIndex:number): Promise<stakeBalanceInterface> =>{
+  return postRequest<stakeBalanceInterface>(API_ENDPOINTS.user.unstake,{walletAddress, stakeIndex});
+}
+
+// WEB2 GET USER ALL COUNT
+export const getAllUserCountWeb2Api = async (): Promise<allCountUser> =>{
+  return getRequest<allCountUser>(API_ENDPOINTS.web2.getAllUserCount);
+}
+
+// GET USER DIRECT BONUS
+export const getDirectBonusApi = async (walletAddress:string): Promise<referralRewardInterface> =>{
+  return postRequest<referralRewardInterface>(API_ENDPOINTS.user.getDirectBonus,{walletAddress});
+}
 

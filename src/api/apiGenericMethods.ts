@@ -35,8 +35,8 @@ export const postRequest = async <T>(
 // Generic function for GET requests
 export const getRequest = async <T>(
   endpoint: string,
-  token: string,
-  params: string
+  token?: string,
+  params?: string
 ): Promise<T> => {
   try {
     // Directly return response.data
@@ -57,7 +57,7 @@ export const getRequest = async <T>(
 // Generic function for PUT requests
 export const putRequest = async <T>(
   endpoint: string,
-  token: string
+  token?: string
 ): Promise<T> => {
   try {
     // Directly return response.data
