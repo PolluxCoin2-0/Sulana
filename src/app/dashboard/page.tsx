@@ -12,15 +12,18 @@ import StakeImg from "@/assests/Stake.svg";
 import Mint from "@/assests/Mint.svg";
 import MintedTransactions from "./MintedTransactions";
 import ShimmerEffect from "@/app/components/ShimmerEffect";
-import { allMintTransactionWeb2Api, approvalApi, broadcastApi, claimRewardAmountApi, claimRewardApi, createClaimRewardWeb2Api, createMintWeb2Api, createStakeTransactionWeb2Api, getAllUserCountWeb2Api, getBalanceApi, getDirectBonusApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, updateStakeByIdWeb2Api, userAllStakesApi } from "@/api/apiFunctions";
+import { allMintTransactionWeb2Api, approvalApi, claimRewardAmountApi, claimRewardApi, 
+createClaimRewardWeb2Api, createMintWeb2Api, createStakeTransactionWeb2Api, getAllUserCountWeb2Api, 
+getBalanceApi, getDirectBonusApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, 
+updateStakeByIdWeb2Api, userAllStakesApi } from "@/api/apiFunctions";
 import { useSelector } from "react-redux";
 import {MintTransactionInterface, TransactionInterface, UserDetailsData } from "@/interface";
 import { RootState } from "@/redux/store";
 import { toast } from "react-toastify";
-import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
 import Loader from "../components/Loader";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { SignBroadcastTransactionStatus } from "@/lib/signBroadcastTransactionStatus";
 
 const DashBoard: React.FC = () => {
   const router = useRouter();
@@ -125,7 +128,6 @@ const DashBoard: React.FC = () => {
          toast.error("Insufficient Sul.");
          throw new Error("Insufficient Sul.");
        }
-
        
       // APPROVAL
       const approvalRawData = await approvalApi(userStateData?.dataObject?.walletAddress as string, stakeAmount);
@@ -135,70 +137,31 @@ const DashBoard: React.FC = () => {
         throw new Error("Approval Failed!");
       }
 
-      if (window.pox) {
-        // SIGN TRANSACTION
-        const approvedSignedTransaction = await window.pox.signdata(
-          approvalRawData?.data?.transaction
-        );
-        console.log({ approvedSignedTransaction });
-        if (approvedSignedTransaction[2] !== "Sign data Successfully") {
-          toast.error("Sign data failed!");
-          throw new Error("Sign data failed!");
-        }
+      const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(approvalRawData?.data?.transaction);
+      if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
+        toast.error("Transaction failed!");
+        throw new Error("Transaction failed!");
+      }
 
-        // BROADCAST TRANSACTION
-        const parsedApprovedSignedTransaction = JSON.parse(approvedSignedTransaction[1]);
-        const ApprovedBroadcast = await broadcastApi(
-          parsedApprovedSignedTransaction
-        );
-        console.log({ ApprovedBroadcast });
+      const stakedData = await stakeSulBalanceApi(userStateData?.dataObject?.walletAddress as string, stakeAmount, userStateData?.dataObject?.referredBy as string);
+      console.log({stakedData});
+      if (!stakedData?.data?.transaction) {
+        toast.error("Claim Reward Failed!");
+        throw new Error("Claim Reward Failed!");
+      }
 
-        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-        const approvedTransactionStatus = await checkTransactionStatus(ApprovedBroadcast?.txid);
-        console.log({ approvedTransactionStatus });
-        if (approvedTransactionStatus !== "SUCCESS") {
-          toast.error("Transaction failed!");
-          throw new Error("Transaction failed!");
-        }
+      const stakeSignBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(stakedData?.data?.transaction);
+      if (stakeSignBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
+        toast.error("Transaction failed!");
+        throw new Error("Transaction failed!");
+      }
 
-        const stakedData = await stakeSulBalanceApi(userStateData?.dataObject?.walletAddress as string, stakeAmount, userStateData?.dataObject?.referredBy as string);
-        console.log({stakedData});
-        if (!stakedData?.data?.transaction) {
-          toast.error("Claim Reward Failed!");
-          throw new Error("Claim Reward Failed!");
-        }
-
-         // SIGN TRANSACTION
-         const signedTransaction = await window.pox.signdata(
-          stakedData?.data?.transaction
-        );
-        console.log({ signedTransaction });
-        if (signedTransaction[2] !== "Sign data Successfully") {
-          toast.error("Sign data failed!");
-          throw new Error("Sign data failed!");
-        }
-
-        // BROADCAST TRANSACTION
-        const parsedSignedTransaction = JSON.parse(signedTransaction[1]);
-        const broadcast = await broadcastApi(
-          parsedSignedTransaction
-        );
-        console.log({ broadcast });
-
-        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-        const transactionStatus = await checkTransactionStatus(broadcast?.txid);
-        console.log({ transactionStatus });
-        if (transactionStatus !== "SUCCESS") {
-          toast.error("Transaction failed!");
-          throw new Error("Transaction failed!");
-        }
-
-      // CREATE STAKE TRANSACTION WEB2 API
-      const web2CreateStakeApiData = await createStakeTransactionWeb2Api(
+       // CREATE STAKE TRANSACTION WEB2 API
+       const web2CreateStakeApiData = await createStakeTransactionWeb2Api(
         userStateData?.dataObject?.walletAddress as string,
-        broadcast?.txid,
+        stakeSignBroadcastTransactionStatusFuncRes?.txid,
         parseInt(stakeAmount),
-        transactionStatus,
+        stakeSignBroadcastTransactionStatusFuncRes?.transactionStatus,
         userStateData?.dataObject?._id as string);
 
         if(web2CreateStakeApiData?.statusCode!==200){
@@ -206,7 +169,6 @@ const DashBoard: React.FC = () => {
         }
 
         console.log({web2CreateStakeApiData})
-      }
 
       setStakeAmount("");
       await fetchData();
@@ -243,45 +205,25 @@ const DashBoard: React.FC = () => {
         throw new Error("Claim Reward Failed!");
       }
 
-      if (window.pox) {
-        // SIGN TRANSACTION
-        const signedTransaction = await window.pox.signdata(
-          claimRewardData?.data?.transaction
-        );
-        console.log({ signedTransaction });
-        if (signedTransaction[2] !== "Sign data Successfully") {
-          toast.error("Sign data failed!");
-          throw new Error("Sign data failed!");
-        }
-
-        // BROADCAST TRANSACTION
-        const parsedSignedTransaction = JSON.parse(signedTransaction[1]);
-        const broadcast = await broadcastApi(
-          parsedSignedTransaction
-        );
-        console.log({ broadcast });
-
-        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-        const transactionStatus = await checkTransactionStatus(broadcast?.txid);
-        console.log({ transactionStatus });
-        if (transactionStatus !== "SUCCESS") {
-          toast.error("Transaction failed!");
-          throw new Error("Transaction failed!");
-        }
+      // SIGN TRANSACTION
+      const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(claimRewardData?.data?.transaction);
+      if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
+        toast.error("Transaction failed!");
+        throw new Error("Transaction failed!");
+      }
 
         // CREATE WEB2 CLAIM API
         const claimRewardWeb2ApiData = await createClaimRewardWeb2Api(
           userStateData?.dataObject?.walletAddress as string,
-          broadcast?.txid, 
+          signBroadcastTransactionStatusFuncRes?.txid, 
           claimRewardAmount, 
-          transactionStatus,
+          signBroadcastTransactionStatusFuncRes?.transactionStatus,
           userStateData?.dataObject?.token as string
         )
         if(!claimRewardWeb2ApiData?.data){
           throw new Error("Create claim reward web2 api failed!");
         }
-        console.log({ claimRewardWeb2ApiData });
-      }
+      console.log({ claimRewardWeb2ApiData });
       await fetchData();
       toast.success("Reward claimed successfully");
     } catch (error) {
@@ -320,39 +262,20 @@ const DashBoard: React.FC = () => {
         toast.error("Mint Failed!");
         throw new Error("Mint Failed!");
       }
+      
+      // SIGN TRANSACTION
+      const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(mintData?.data?.transaction);
+      if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
+        toast.error("Transaction failed!");
+        throw new Error("Transaction failed!");
+      }
 
-      if (window.pox) {
-        // SIGN TRANSACTION
-        const signedTransaction = await window.pox.signdata(
-          mintData?.data?.transaction
-        );
-        console.log({ signedTransaction });
-        if (signedTransaction[2] !== "Sign data Successfully") {
-          toast.error("Sign data failed!");
-          throw new Error("Sign data failed!");
-        }
-
-        // BROADCAST TRANSACTION
-        const parsedSignedTransaction = JSON.parse(signedTransaction[1]);
-        const broadcast = await broadcastApi(
-          parsedSignedTransaction
-        );
-        console.log({ broadcast });
-
-        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-        const transactionStatus = await checkTransactionStatus(broadcast?.txid);
-        console.log({ transactionStatus });
-        if (transactionStatus !== "SUCCESS") {
-          toast.error("Transaction failed!");
-          throw new Error("Transaction failed!");
-        }
-
-      // WEB2 CREATE MINT API CALLING FUNCTIONS
-      const web2MintApiData = await createMintWeb2Api(
+       // WEB2 CREATE MINT API CALLING FUNCTIONS
+       const web2MintApiData = await createMintWeb2Api(
         userStateData?.dataObject?.walletAddress as string,
-        broadcast?.txid, 
+        signBroadcastTransactionStatusFuncRes?.txid, 
         amount, 
-        transactionStatus,
+        signBroadcastTransactionStatusFuncRes?.transactionStatus,
         userStateData?.dataObject?.token as string)
         console.log({web2MintApiData})
 
@@ -364,11 +287,9 @@ const DashBoard: React.FC = () => {
      const web2updateStakeDataApi = await updateStakeByIdWeb2Api(userID);
      console.log({web2updateStakeDataApi});
 
-     
      if(web2updateStakeDataApi?.statusCode!==200){
       throw new Error("Web2 Update Stake APi Failed transaction");
     }
-      }
 
       await fetchData();
       toast.success("Mint successfully");
@@ -385,12 +306,11 @@ const DashBoard: React.FC = () => {
     
       setIsMintLoading(false);
     }
-
   }
 
   const handleReferralLinkCopy = () => {
     if (userStateData?.dataObject?.walletAddress) {
-      navigator.clipboard.writeText(userStateData?.dataObject?.walletAddress)
+      navigator.clipboard.writeText(`https://sulaana.com/sulmine/referral/${userStateData?.dataObject?.walletAddress}`)
         .then(() => {
           toast.success("Referral link copied to clipboard");
         })

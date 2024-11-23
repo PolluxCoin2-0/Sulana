@@ -10,7 +10,6 @@ import { getPolinkweb } from "@/lib/connectWallet";
 import { toast } from "react-toastify";
 import {
   approvalApi,
-  broadcastApi,
   checkUserExistedApi,
   createStakeTransactionWeb2Api,
   getBalanceApi,
@@ -19,10 +18,10 @@ import {
 } from "@/api/apiFunctions";
 import { checkStakeBalance } from "@/lib/checkStakeBalance";
 import Loader from "@/app/components/Loader";
-import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import { SignBroadcastTransactionStatus } from "@/lib/signBroadcastTransactionStatus";
 
 const RegistrationPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
@@ -127,31 +126,12 @@ const RegistrationPage: React.FC = () => {
         throw new Error("Approval Failed!");
       }
 
-      if (window.pox) {
         // SIGN TRANSACTION
-        const signedTransaction = await window.pox.signdata(
-          approvalRawData?.data?.transaction
-        );
-        console.log({ signedTransaction });
-        if (signedTransaction[2] !== "Sign data Successfully") {
-          toast.error("Sign data failed!");
-          throw new Error("Sign data failed!");
-        }
-
-        // BROADCAST TRANSACTION
-        const parsedSignedTransaction = JSON.parse(signedTransaction[1]);
-        const broadcast = await broadcastApi(
-          parsedSignedTransaction
-        );
-        console.log({ broadcast });
-
-        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-        const transactionStatus = await checkTransactionStatus(broadcast?.txid);
-        console.log({ transactionStatus });
-        if (transactionStatus !== "SUCCESS") {
-          toast.error("Transaction failed!");
-          throw new Error("Transaction failed!");
-        }
+      const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(approvalRawData?.data?.transaction);
+      if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
+        toast.error("Transaction failed!");
+        throw new Error("Transaction failed!");
+      }
 
         // STAKE SUL AMOUNT
         const stakeBalanceApiData = await stakeSulBalanceApi(
@@ -166,35 +146,13 @@ const RegistrationPage: React.FC = () => {
         }
 
         // SIGN TRANSACTION
-        const stakedSignedTransaction = await window.pox.signdata(
-          stakeBalanceApiData?.data?.transaction
-        );
-        console.log({ stakedSignedTransaction });
-        if (stakedSignedTransaction[2] !== "Sign data Successfully") {
-          toast.error("Sign data failed!");
-          throw new Error("Sign data failed!");
-        }
-
-        // BROADCAST TRANSACTION
-        const parsedStakedSignedTransaction = JSON.parse(
-          stakedSignedTransaction[1]
-        );
-        const stakedBroadcast = await broadcastApi(
-          parsedStakedSignedTransaction
-        );
-        console.log({ stakedBroadcast });
-
-        // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-        const stakedTransactionStatus = await checkTransactionStatus(
-          stakedBroadcast?.txid
-        );
-        console.log({ stakedTransactionStatus });
-        if (stakedTransactionStatus !== "SUCCESS") {
+        const stakedSignBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(stakeBalanceApiData?.data?.transaction);
+        if (stakedSignBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
           toast.error("Transaction failed!");
           throw new Error("Transaction failed!");
         }
 
-         // Call the API to register the user with the wallet address and referral address
+           // Call the API to register the user with the wallet address and referral address
       const registerApiResponseData = await registerApi(
         userWalletAddress,
         sulAmount,
@@ -220,9 +178,9 @@ const RegistrationPage: React.FC = () => {
         // CREATE STAKE TRANSACTION WEB2 API
         const web2CreateStakeApiData = await createStakeTransactionWeb2Api(
         userWalletAddress,
-        stakedBroadcast?.txid,
+        stakedSignBroadcastTransactionStatusFuncRes?.txid,
         parseInt(sulAmount),
-        stakedTransactionStatus,
+        stakedSignBroadcastTransactionStatusFuncRes?.transactionStatus,
         registerApiResponseData?.data?.id);
 
         if(web2CreateStakeApiData?.statusCode!==200){
@@ -230,7 +188,6 @@ const RegistrationPage: React.FC = () => {
         }
 
         console.log({web2CreateStakeApiData})
-      }
       }
 
       toast.success("Registration Success");
