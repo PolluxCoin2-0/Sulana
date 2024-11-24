@@ -2,14 +2,14 @@
 import { TransactionInterface } from "@/interface";
 import Loader from "../components/Loader";
 import { useEffect, useState } from "react";
-import { broadcastApi, unstakeApi, userAllStakesApi } from "@/api/apiFunctions";
+import { unstakeApi, userAllStakesApi } from "@/api/apiFunctions";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import { checkTransactionStatus } from "@/lib/CheckTransactionStatus";
 import { useRouter } from "next/navigation";
 import ShimmerEffect from "../components/ShimmerEffect";
+import { SignBroadcastTransactionStatus } from "@/lib/signBroadcastTransactionStatus";
 
 const StakeUnstakePage: React.FC = () => {
   const router = useRouter();
@@ -45,7 +45,6 @@ const StakeUnstakePage: React.FC = () => {
      return <ShimmerEffect />;
    }
 
-
   const handleUnstakeFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, ): Promise<void> => {
     e.preventDefault();
     
@@ -68,32 +67,14 @@ const StakeUnstakePage: React.FC = () => {
       toast.error("Mint Failed!");
       throw new Error("Mint Failed!");
     }
-    if (window.pox) {
-      // SIGN TRANSACTION
-      const signedTransaction = await window.pox.signdata(
-        unstakeApiData?.data?.transaction
-      );
-      console.log({ signedTransaction });
-      if (signedTransaction[2] !== "Sign data Successfully") {
-        toast.error("Sign data failed!");
-        throw new Error("Sign data failed!");
-      }
 
-      // BROADCAST TRANSACTION
-      const parsedSignedTransaction = JSON.parse(signedTransaction[1]);
-      const broadcast = await broadcastApi(
-        parsedSignedTransaction
-      );
-      console.log({ broadcast });
-
-      // CHECK TRANSACTION IS SUCCESSFUL OR REVERT
-      const transactionStatus = await checkTransactionStatus(broadcast?.txid);
-      console.log({ transactionStatus });
-      if (transactionStatus !== "SUCCESS") {
+    // SIGN TRANSACTION
+    const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(unstakeApiData?.data?.transaction);
+      if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
       }
-    }
+  
       toast.success("Unstake successful!");
      await fetchData(); 
     } catch (error) {
