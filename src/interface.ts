@@ -240,6 +240,31 @@ interface stakeUnstakebyIdInterface {
     message: string,
 }
 
+interface Referral {
+  walletAddress: string;
+  referredBy: string;
+  createdAt: string;
+  depositAmount: number;
+}
+
+interface LevelData {
+  count: number;
+  referrals: Referral[];
+  totalDeposit: number;
+}
+
+interface ReferralData {
+  data: {
+    data: {
+      levels: { [key: string]: LevelData }; // Dynamic levels represented by keys
+      allLevelFunds: number;
+    };
+    message: string;
+  };
+  message: string;
+}
+
+
 export type {
   LoginApiResponse,
   getbalanceInterface,
@@ -263,4 +288,5 @@ export type {
   MintTransactionInterface,
   allCountUser,
   stakeUnstakebyIdInterface,
+  ReferralData,
 };

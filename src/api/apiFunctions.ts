@@ -5,7 +5,7 @@ import {
  } from "./apiGenericMethods";
 import API_ENDPOINTS from "./apiEndpoints"; // Import the API endpoints
 import axios from "axios";
-import { allCountUser, allMintTransactionResponseInterface, BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, LoginApiResponse, referralRewardInterface, registerInterface, stakeBalanceInterface, stakeUnstakebyIdInterface, Transaction,UpdateStakeResponseInterface,userDetailsInterface, web2CreateMintInterface } from "@/interface";
+import { allCountUser, allMintTransactionResponseInterface, BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, LoginApiResponse, ReferralData, referralRewardInterface, registerInterface, stakeBalanceInterface, stakeUnstakebyIdInterface, Transaction,UpdateStakeResponseInterface,userDetailsInterface, web2CreateMintInterface } from "@/interface";
 
 const FULL_NODE_TRANSACTION_URL = process.env.NEXT_PUBLIC_FULL_NODE_TRANSACTION_URL || "";
 
@@ -142,4 +142,10 @@ export const getTotalClaimRewwardApi = async (walletAddress:string): Promise<ref
 // GET STAKEUNSTAKE WEB2 API
 export const stakeUnstakeByIdWeb2Api = async (id:string): Promise<stakeUnstakebyIdInterface> =>{
   return putRequest<stakeUnstakebyIdInterface>(`${API_ENDPOINTS.web2.updateUnStakeById}/${id}`);
+}
+
+// GET ALL REFERRALS TREE 
+
+export const getAllReferralsTreeWeb2Api = async (token: string, pageNumber:number): Promise<ReferralData> => {
+  return getRequest<ReferralData>(API_ENDPOINTS.web2.getAllReferrals,token,{page:pageNumber, limit:10});
 }

@@ -397,9 +397,9 @@ const DashBoard: React.FC = () => {
               />
             )}
             {button && (
-              <button className="text-xs md:text-sm bg-[#D2D2D2] rounded-2xl py-[6px] px-3 md:px-4 font-bold text-black cursor-pointer">
+              <Link href="/ReferralEarningTrx" className="text-xs md:text-sm bg-[#D2D2D2] rounded-2xl py-[6px] px-3 md:px-4 font-bold text-black cursor-pointer">
                 {button}
-              </button>
+              </Link>
             )}
           </div>
         ))}

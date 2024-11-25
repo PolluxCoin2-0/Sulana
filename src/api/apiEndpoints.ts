@@ -26,6 +26,7 @@ const API_ENDPOINTS = {
       getAllUserRewardTrx :"/getAllUserRewardTrx",
       getAllStakes:"/getAllStakes",
       getAllUserCount:"/getAllUserCount",
+      getAllReferrals : "/getAllReferrals"
     },
     transaction:{
       approval:"/approval",
