@@ -5,7 +5,7 @@ import {
  } from "./apiGenericMethods";
 import API_ENDPOINTS from "./apiEndpoints"; // Import the API endpoints
 import axios from "axios";
-import { allCountUser, allMintTransactionResponseInterface, BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, LoginApiResponse, referralRewardInterface, registerInterface, stakeBalanceInterface, Transaction,UpdateStakeResponseInterface,userDetailsInterface, web2CreateMintInterface } from "@/interface";
+import { allCountUser, allMintTransactionResponseInterface, BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, LoginApiResponse, referralRewardInterface, registerInterface, stakeBalanceInterface, stakeUnstakebyIdInterface, Transaction,UpdateStakeResponseInterface,userDetailsInterface, web2CreateMintInterface } from "@/interface";
 
 const FULL_NODE_TRANSACTION_URL = process.env.NEXT_PUBLIC_FULL_NODE_TRANSACTION_URL || "";
 
@@ -95,8 +95,8 @@ export const updateStakeByIdWeb2Api = async (userId:string): Promise<UpdateStake
 }
 
 // WEB2 MINT TRANSACTION API
-export const allMintTransactionWeb2Api = async (token:string): Promise<allMintTransactionResponseInterface> =>{
-  return getRequest<allMintTransactionResponseInterface>(API_ENDPOINTS.web2.getAllUserMintTrx, token);
+export const allMintTransactionWeb2Api = async (token:string, pageNumber:number): Promise<allMintTransactionResponseInterface> =>{
+  return getRequest<allMintTransactionResponseInterface>(API_ENDPOINTS.web2.getAllUserMintTrx, token,{page:pageNumber, limit:10});
 }
 
 // WEB2 CREATE STAKE TRANSACTION API
@@ -106,7 +106,12 @@ export const createStakeTransactionWeb2Api = async (walletAddress:string,trxId:s
 
 // WEB2 GET USER ALL STAKES
 export const userAllStakesApi = async (token:string): Promise<getAllStakesResponseInterface> =>{
-  return getRequest<getAllStakesResponseInterface>(API_ENDPOINTS.web2.getAllStakes,token,"");
+  return getRequest<getAllStakesResponseInterface>(API_ENDPOINTS.web2.getAllStakes,token);
+}
+
+// WEB2 GET USER ALL UNSTAKES
+export const userAllUnStakesApi = async (token:string, pageNumber:number): Promise<getAllStakesResponseInterface> =>{
+  return getRequest<getAllStakesResponseInterface>(API_ENDPOINTS.web2.getAllStakes,token, {page:pageNumber, limit:10});
 }
 
 // UNSTAKE API
@@ -135,6 +140,6 @@ export const getTotalClaimRewwardApi = async (walletAddress:string): Promise<ref
 }
 
 // GET STAKEUNSTAKE WEB2 API
-export const stakeUnstakeByIdWeb2Api = async (id:string): Promise<referralRewardInterface> =>{
-  return putRequest<referralRewardInterface>(`${API_ENDPOINTS.web2.updateUnStakeById}/${id}`);
+export const stakeUnstakeByIdWeb2Api = async (id:string): Promise<stakeUnstakebyIdInterface> =>{
+  return putRequest<stakeUnstakebyIdInterface>(`${API_ENDPOINTS.web2.updateUnStakeById}/${id}`);
 }

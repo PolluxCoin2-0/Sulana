@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import ShimmerEffect from "../components/ShimmerEffect";
 import { useRouter } from "next/navigation";
+import Pagination from "../components/Pagination";
 
 const ClaimReward: React.FC= () => {
   const router = useRouter();
@@ -14,11 +15,14 @@ const ClaimReward: React.FC= () => {
     const [isComponentLoading, setComponentLoading] = useState <boolean>(false);
     const [claimRewardDataArray, setClaimRewardDataArray] = useState<TransactionInterface[]>([]);
     const [claimRewardAmount, setClaimRewardAmount] = useState<number>(0);
+    const [totalCount, setTotalCount] = useState<number>(0);
+    const [currentPage, setCurrentPage] = useState<number>(1);
 
     const fetchData = async()=>{
         setComponentLoading(true);
         // GET ALL CLAIM REWARD TRANSACTION DATA
         const claimRewardData = await claimRewardTransactionWeb2Api(userStateData?.dataObject?.token as string);
+    setTotalCount(claimRewardData?.data?.transactionCount);
         console.log({claimRewardData});
         setClaimRewardDataArray(claimRewardData.data.transactions);
 
@@ -74,6 +78,8 @@ const ClaimReward: React.FC= () => {
         </p>
     }
     </div>
+    <Pagination totalRecords={totalCount || 0} setPageNo={setCurrentPage} currentMintTrxPage={currentPage}/>
+
     </div>
   );
 };

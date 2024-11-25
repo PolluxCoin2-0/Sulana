@@ -2,7 +2,7 @@
 import { TransactionInterface } from "@/interface";
 import Loader from "../components/Loader";
 import { useEffect, useState } from "react";
-import { stakeUnstakeByIdWeb2Api, unstakeApi, userAllStakesApi } from "@/api/apiFunctions";
+import { stakeUnstakeByIdWeb2Api, unstakeApi, userAllUnStakesApi } from "@/api/apiFunctions";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import ShimmerEffect from "../components/ShimmerEffect";
 import { SignBroadcastTransactionStatus } from "@/lib/signBroadcastTransactionStatus";
+import Pagination from "../components/Pagination";
 
 const StakeUnstakePage: React.FC = () => {
   const router = useRouter();
@@ -17,11 +18,14 @@ const StakeUnstakePage: React.FC = () => {
   const userStateData = useSelector((state: RootState)=>state?.wallet);
   const [allStakedArray, setAllStakedArray] = useState<TransactionInterface[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   const fetchData = async()=>{
     setComponentLoading(true);
-    const stakesDataArray = await userAllStakesApi(userStateData?.dataObject?.token as string);
+    const stakesDataArray = await userAllUnStakesApi(userStateData?.dataObject?.token as string, currentPage);
     console.log({stakesDataArray});
+    setTotalCount(stakesDataArray?.data?.transactionCount);
     const updatedStakes = stakesDataArray.data.transactions.map((item: TransactionInterface) => ({
       ...item,
       isLoading: false, // Once data is fetched, set isLoading to false
@@ -35,7 +39,7 @@ const StakeUnstakePage: React.FC = () => {
     if(userStateData?.isLogin){
      fetchData();
     }
-  },[])
+  },[currentPage])
 
   if(!userStateData?.isLogin){
     router.push("/");
@@ -85,7 +89,11 @@ const StakeUnstakePage: React.FC = () => {
       const stakeUnstakeByIdApiData = await stakeUnstakeByIdWeb2Api(id);
       console.log({ stakeUnstakeByIdApiData });
 
-  
+      if(stakeUnstakeByIdApiData?.statusCode!==200){
+        toast.error("Web2 create unstake api failed!");
+        throw new Error("Web2 create unstake api failed!");
+      }
+      
       toast.success("Unstake successful!");
      await fetchData(); 
     } catch (error) {
@@ -156,6 +164,8 @@ const StakeUnstakePage: React.FC = () => {
       <p className="text-white font-bold text-xl pl-4 pt-4">Not staked Data Found !
         </p>}
       </div>
+
+      <Pagination totalRecords={totalCount || 0} setPageNo={setCurrentPage} currentMintTrxPage={currentPage}/>
     </div>
   );
 };

@@ -12,12 +12,12 @@ import StakeImg from "@/assests/Stake.svg";
 import Mint from "@/assests/Mint.svg";
 import MintedTransactions from "./MintedTransactions";
 import ShimmerEffect from "@/app/components/ShimmerEffect";
-import { allMintTransactionWeb2Api, approvalApi, claimRewardAmountApi, claimRewardApi, 
+import {approvalApi, claimRewardAmountApi, claimRewardApi, 
 createClaimRewardWeb2Api, createMintWeb2Api, createStakeTransactionWeb2Api, getAllUserCountWeb2Api, 
 getBalanceApi, getDirectBonusApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, 
 updateStakeByIdWeb2Api, userAllStakesApi } from "@/api/apiFunctions";
 import { useSelector } from "react-redux";
-import {MintTransactionInterface, TransactionInterface, UserDetailsData } from "@/interface";
+import { TransactionInterface, UserDetailsData } from "@/interface";
 import { RootState } from "@/redux/store";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
@@ -37,7 +37,6 @@ const DashBoard: React.FC = () => {
   const [stakeAmount, setStakeAmount] = useState<string>("");
   const [referralAmount, setReferralAmount] = useState<number>(0);
   const [stakedArray, setStakedArray] = useState<TransactionInterface[]>([]);
-  const [mintTrxDataArray, setMintTrxDataArray] = useState<MintTransactionInterface[]>([]);
   const [claimRewardAmount, setClaimRewardAmount] = useState<number>(0);
   const [allUserCount ,  setAllUserCount] = useState<number>(0);
   const [directBonus, setDirectBonus] = useState<number>(0);
@@ -70,11 +69,6 @@ const DashBoard: React.FC = () => {
     }));
     console.log({updatedStakes});
     setStakedArray(updatedStakes);
-
-    // GET ALL MINT TRANSACTIONS DATA WEB2
-    const allMintTrxWeb2ApiData = await allMintTransactionWeb2Api(userStateData?.dataObject?.token as string);
-    console.log({allMintTrxWeb2ApiData});
-    setMintTrxDataArray(allMintTrxWeb2ApiData?.data?.transactions)
 
     // GET ALL CLAIM REWARD AMOUNT
     const claimRewardApiData = await claimRewardAmountApi(userStateData?.dataObject?.walletAddress as string);
@@ -559,9 +553,7 @@ const DashBoard: React.FC = () => {
 </div>
       {/* Transaction Table */}
       <p className="font-bold text-white text-3xl mt-8 mb-4 pl-2 ">Transactions</p>
-      {mintTrxDataArray.length>0 ? <MintedTransactions transactions={mintTrxDataArray} />:
-      <p className="text-white font-bold text-xl pl-4 pt-4">No Mint Transaction !</p>
-      }
+     <MintedTransactions  />
     </div>
   );
 };

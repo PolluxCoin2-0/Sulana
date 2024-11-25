@@ -36,7 +36,7 @@ export const postRequest = async <T>(
 export const getRequest = async <T>(
   endpoint: string,
   token?: string,
-  params?: string
+  params?: object
 ): Promise<T> => {
   try {
     // Directly return response.data
