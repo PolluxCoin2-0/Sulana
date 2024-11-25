@@ -9,7 +9,7 @@ interface ErrorInterface {
 // Generic function for POST requests
 export const postRequest = async <T>(
   endpoint: string,
-  data: object,
+  data?: object,
   token?: string
 ): Promise<T> => {
   try {

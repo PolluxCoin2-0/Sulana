@@ -116,6 +116,13 @@ const DashBoard: React.FC = () => {
         setIsStakeLoading(false);
         return;
       }
+
+      if(parseInt(stakeAmount)<50){
+        toast.error("Sul amount should be greater than or equal to 50.");
+        setIsStakeLoading(false);
+        return;
+      }
+
        // USER MUST HAVE A MINIMUM SUL AMOUNT IN THEIR WALLET EQUAL TO OR GREATER THAN THE ENTERED AMOUNT
        const sulAmountOfUser = await getBalanceApi(userStateData?.dataObject?.walletAddress as string);
        console.log("sulAmountOfUser", sulAmountOfUser);
@@ -172,7 +179,7 @@ const DashBoard: React.FC = () => {
 
       setStakeAmount("");
       await fetchData();
-      toast.success("Reward claimed successfully");
+      toast.success("Staked successfully");
     } catch (error) {
       toast.error("Failed to stake amount!");
       console.error(error);
@@ -515,11 +522,13 @@ const DashBoard: React.FC = () => {
 
   {/* Data Row Section */}
   {
-    stakedArray.map ((item, index)=>{
+    stakedArray.length>0 ? stakedArray.map ((item, index)=>{
       return (
         <>{
-          !item.isUnstaked &&
-       <Link href={`https://poxscan.io/transactions-detail/${item?.trxId}`} className="text-white flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0 pb-2 border-b border-gray-400 border-opacity-30 last:border-0" key={item?._id}>
+          
+       <Link href={`https://poxscan.io/transactions-detail/${item?.trxId}`} 
+       className={`${item.isUnstaked?"text-gray-500" : "text-white"} flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0 pb-2 border-b border-gray-400 border-opacity-30 last:border-0`}
+        key={item?._id}>
     <p className="px-8 py-2 w-[20%] text-left">{item?.amount}</p>
     <p className="px-4 py-2 w-[20%] text-center">{item?.mintCount} / 1000</p>
     <p className="px-4 py-2 w-[20%] text-left lg:text-center">{new Date(item?.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
@@ -531,9 +540,10 @@ const DashBoard: React.FC = () => {
         <Loader />
       </div> : 
       <button
+      disabled={item.isUnstaked}
       onClick={(e)=>handleMintFunc(e,index, item?.amount, item?._id)}
-      className="w-full lg:w-[50%] bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] 
-      text-white text-lg font-semibold px-4 py-2 rounded-xl transform hover:scale-105 transition delay-300"
+      className={`w-full lg:w-[50%] ${item.isUnstaked?"bg-gradient-to-r from-[rgba(137,34,179,0.3)] via-[rgba(90,100,214,0.3)] to-[rgba(185,77,228,0.3)]": "bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)]"} 
+      text-white text-lg font-semibold px-4 py-2 rounded-xl transform hover:scale-105 transition delay-300`}
       >
         Mint
       </button>
@@ -543,12 +553,15 @@ const DashBoard: React.FC = () => {
       }
         </>
       )
-    })
+    }) : 
+    <p className="text-white font-bold text-xl pl-4 pt-4">No Stakes Found !</p>
   }
 </div>
       {/* Transaction Table */}
       <p className="font-bold text-white text-3xl mt-8 mb-4 pl-2 ">Transactions</p>
-      <MintedTransactions transactions={mintTrxDataArray} />
+      {mintTrxDataArray.length>0 ? <MintedTransactions transactions={mintTrxDataArray} />:
+      <p className="text-white font-bold text-xl pl-4 pt-4">No Mint Transaction !</p>
+      }
     </div>
   );
 };

@@ -21,6 +21,7 @@ const API_ENDPOINTS = {
       createMint :"/createMint",
       createClaim : "/createReward",
       updateStakeById:"/updateStakeById",
+      updateUnStakeById : "/updateUnStakeById",
       getAllUserMintTrx:"/getAllUserMintTrx",
       getAllUserRewardTrx :"/getAllUserRewardTrx",
       getAllStakes:"/getAllStakes",

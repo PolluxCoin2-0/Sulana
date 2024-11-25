@@ -101,8 +101,6 @@ export const allMintTransactionWeb2Api = async (token:string): Promise<allMintTr
 
 // WEB2 CREATE STAKE TRANSACTION API
 export const createStakeTransactionWeb2Api = async (walletAddress:string,trxId:string, amount:number, status:string, userId:string): Promise<web2CreateMintInterface> =>{
-  console.log("Request URL:", `${API_ENDPOINTS.web2.createStake}/${userId}`);
-console.log("Request Payload:", { walletAddress, trxId, amount, status });
   return postRequest<web2CreateMintInterface>(`${API_ENDPOINTS.web2.createStake}/${userId}`,{walletAddress, trxId, amount, status},);
 }
 
@@ -134,4 +132,9 @@ export const claimRewardTransactionWeb2Api = async (token:string): Promise<getAl
 // GET USER TOTAL CLAIM REWARD AMOUNT
 export const getTotalClaimRewwardApi = async (walletAddress:string): Promise<referralRewardInterface> =>{
   return postRequest<referralRewardInterface>(API_ENDPOINTS.user.getClaimedRewards,{walletAddress});
+}
+
+// GET STAKEUNSTAKE WEB2 API
+export const stakeUnstakeByIdWeb2Api = async (id:string): Promise<referralRewardInterface> =>{
+  return putRequest<referralRewardInterface>(`${API_ENDPOINTS.web2.updateUnStakeById}/${id}`);
 }

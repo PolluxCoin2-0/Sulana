@@ -212,6 +212,34 @@ interface allCountUser {
   message: string,
 }
 
+
+interface stakeUnstakebyIdInterface {
+    data: {
+        success: boolean,
+        data: {
+            _id: string,
+            userId: string,
+            trxId:string,
+            walletAddress: string,
+            amount: number,
+            status: string,
+            mintCount: number,
+            maturityDuration: string,
+            beforeMaturityDuration: string,
+            isUnstaked: boolean,
+            isDeleted: boolean,
+            lastMintedAt: string,
+            createdAt: string,
+            updatedAt: string,
+            __v: number,
+            id: string,
+        },
+        message: string,
+    },
+    statusCode: number,
+    message: string,
+}
+
 export type {
   LoginApiResponse,
   getbalanceInterface,
@@ -234,4 +262,5 @@ export type {
   MintTransactionDataInterface,
   MintTransactionInterface,
   allCountUser,
+  stakeUnstakebyIdInterface,
 };

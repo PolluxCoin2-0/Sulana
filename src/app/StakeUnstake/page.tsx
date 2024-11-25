@@ -2,7 +2,7 @@
 import { TransactionInterface } from "@/interface";
 import Loader from "../components/Loader";
 import { useEffect, useState } from "react";
-import { unstakeApi, userAllStakesApi } from "@/api/apiFunctions";
+import { stakeUnstakeByIdWeb2Api, unstakeApi, userAllStakesApi } from "@/api/apiFunctions";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import Link from "next/link";
@@ -45,7 +45,7 @@ const StakeUnstakePage: React.FC = () => {
      return <ShimmerEffect />;
    }
 
-  const handleUnstakeFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, ): Promise<void> => {
+  const handleUnstakeFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, id:string, mintCount:number): Promise<void> => {
     e.preventDefault();
     
     if(isLoading){
@@ -54,13 +54,19 @@ const StakeUnstakePage: React.FC = () => {
     }
 
     try {
+      // CHECK MINT COUNT IS GREATER THAN OR EQUAL TO 10
+      if(mintCount<10){
+        toast.error("Mint count should be greater than or equal to 10.");
+        return;
+      }
+
       setIsLoading(true);
       setAllStakedArray((prevState) => {
         const updatedState = [...prevState];
         updatedState[index] = { ...updatedState[index], isLoading: true };
         return updatedState;
       });
-      
+      console.log("index",index, "id", id, "mintCount", mintCount)
      const unstakeApiData =  await unstakeApi(userStateData?.dataObject?.walletAddress as string, index);
 
      if (!unstakeApiData?.data?.transaction) {
@@ -74,6 +80,11 @@ const StakeUnstakePage: React.FC = () => {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
       }
+
+      // STAKEUNSTAKE TRANSACTION WEB2 API CALLING
+      const stakeUnstakeByIdApiData = await stakeUnstakeByIdWeb2Api(id);
+      console.log({ stakeUnstakeByIdApiData });
+
   
       toast.success("Unstake successful!");
      await fetchData(); 
@@ -104,12 +115,13 @@ const StakeUnstakePage: React.FC = () => {
         </div>
 
         {/* Data Row Section */}
-        {allStakedArray.map((item, index) => {
+        {
+        allStakedArray.length > 0 ? allStakedArray.map((item, index) => {
           return (
             <>
-              {!item.isUnstaked && (
+              { (
                 <Link href={`https://poxscan.io/transactions-detail/${item?.trxId}`}
-                  className="text-white flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0 pb-2 border-b border-gray-400 border-opacity-30 last:border-0"
+                  className={`${item.isUnstaked ? "text-gray-500" : "text-white"} flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0 pb-2 border-b border-gray-400 border-opacity-30 last:border-0`}
                   key={index}
                 >
                   <p className="px-8 py-2 w-[25%] text-left">{new Date(item?.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
@@ -126,9 +138,10 @@ const StakeUnstakePage: React.FC = () => {
                       </div>
                     ) : (
                       <button
-                        onClick={(e) => handleUnstakeFunc(e, index)}
-                        className="w-full lg:w-[40%] bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] 
-         text-white text-lg font-semibold px-4 py-2 rounded-xl transform hover:scale-105 transition delay-300"
+                      disabled={item.isUnstaked }
+                        onClick={(e) => handleUnstakeFunc(e, index, item?._id, item?.mintCount)}
+                        className={`w-full lg:w-[40%] ${item.isUnstaked ? "bg-gradient-to-r from-[rgba(137,34,179,0.3)] via-[rgba(90,100,214,0.3)] to-[rgba(185,77,228,0.3)]" : "bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)]"} 
+         text-white text-lg font-semibold px-4 py-2 rounded-xl transform hover:scale-105 transition delay-300`}
                       >
                         Unstake
                       </button>
@@ -138,7 +151,10 @@ const StakeUnstakePage: React.FC = () => {
               )}
             </>
           );
-        })}
+        })
+      :
+      <p className="text-white font-bold text-xl pl-4 pt-4">Not staked Data Found !
+        </p>}
       </div>
     </div>
   );

@@ -59,7 +59,7 @@ const ClaimReward: React.FC= () => {
       </div>
 
       {/* Transactions */}
-      {claimRewardDataArray.map((transaction, index) => (
+      {claimRewardDataArray.length > 0 ?claimRewardDataArray.map((transaction, index) => (
         <Link href={`https://poxscan.io/transactions-detail/${transaction?.trxId}`}
           key={index}
           className="text-white flex flex-row items-center justify-between pt-4 pb-2 border-b border-gray-400 border-opacity-30 last:border-0 min-w-[850px] md:min-w-0"
@@ -69,7 +69,10 @@ const ClaimReward: React.FC= () => {
           <p className="px-4 py-2 w-[25%] text-center">{new Date(transaction?.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
           <p className="px-8 py-2 w-[25%] text-right">{transaction?.amount}</p>
         </Link>
-      ))}
+      ))
+    :  <p className="text-white font-bold text-xl pl-4 pt-4">Not Claimed Reward Found !
+        </p>
+    }
     </div>
     </div>
   );

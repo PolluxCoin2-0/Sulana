@@ -70,8 +70,20 @@ const RegistrationPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      if (!userWalletAddress || !referralAddress || !sulAmount) {
+      if (!userWalletAddress || !referralAddress) {
         toast.error("All input fields must be completed.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (!sulAmount || parseInt(sulAmount) <= 0) {
+        toast.error("SUL amount must be greater than 0.");
+        setIsLoading(false);
+        return;
+      }
+
+      if(parseInt(sulAmount)<50){
+        toast.error("Sul amount should be greater than or equal to 50.");
         setIsLoading(false);
         return;
       }
