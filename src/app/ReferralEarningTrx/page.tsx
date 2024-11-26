@@ -4,11 +4,14 @@ import { ReferralData } from "@/interface";
 import { RootState } from "@/redux/store";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const ReferralEarnings: React.FC = () => {
   const [expandedLevel, setExpandedLevel] = useState<number | null>(null);
   const userStateData = useSelector((state: RootState) => state?.wallet);
-  const [referralEarnings, setReferralEarnings] = useState<ReferralData | null>(null);
+  const [referralEarnings, setReferralEarnings] = useState<ReferralData | null>(
+    null
+  );
 
   useEffect(() => {
     if (userStateData?.isLogin) {
@@ -18,10 +21,9 @@ const ReferralEarnings: React.FC = () => {
 
   const fetchData = async () => {
     const userReferralTreeData = await getAllReferralsTreeWeb2Api(
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzQ0MjY2YmVkYTY5ZDNmODM5ZmIxNjIiLCJyb2xlIjoiVVNFUiIsImp0aSI6IjEzMmQ3ODZhZTA5YWY4NjBlZGJiM2JmN2JhMTYwYzljOTk3ZmVlZTkiLCJ3YWxsZXRBZGRyZXNzIjoiUFBEdWR5NnVBUkxrSDE4Y3REN1JWVEZMbVRLcVZCR05WbyIsImlhdCI6MTczMjUzNjQ5MX0.6POV4Km1LNqfrTjatwcZ5CihJIrhS7GQaC0GgN5R9-g",
+      "your-api-key",
       1
     );
-    console.log({userReferralTreeData})
     setReferralEarnings(userReferralTreeData);
   };
 
@@ -34,101 +36,112 @@ const ReferralEarnings: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-100 rounded-md shadow-lg">
-      {/* Total Balance */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <p className="text-xl font-bold mb-4 truncate">
-    Wallet Address: {userStateData?.dataObject?.walletAddress || "N/A"}
-  </p>
-  <p className="text-xl font-bold mb-4">
-    Total Balance: ₹{referralEarnings?.data?.data?.allLevelFunds || 0}
-  </p>
-</div>
+    <div className="min-h-screen bg-black px-2 md:px-6 py-8">
+      <div className="bg-gradient-to-b from-[rgba(43,37,90,0.34)] to-[rgba(200,200,200,0.09)] px-2 pt-6 md:px-6  rounded-xl">
+        {/* Total Balance */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between text-gray-300">
+          <p className="text-sm md:text-lg font-bold mb-4">
+            Wallet Address: {userStateData?.dataObject?.walletAddress || "N/A"}
+          </p>
+          <p className="text-sm md:text-lg font-bold mb-4">
+            Total Balance: ₹{referralEarnings?.data?.data?.allLevelFunds || 0}
+          </p>
+        </div>
 
+        {/* Main Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-white text-sm border-separate border-spacing-y-2">
+            <thead>
+              <tr className="bg-[#212D49] rounded-md text-xs md:text-base">
+                <th className="p-3 pl-8 text-left rounded-l-md">Level</th>
+                <th className="p-3 text-center">Total Wallets</th>
+                <th className="p-3 text-center">Total Investments</th>
+                <th className="p-3 text-center rounded-r-md">See More</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(referralEarnings?.data?.data || {})
+                .filter((key) => key.startsWith("level") && key.endsWith("Count"))
+                .map((key, index) => {
+                  const level = index + 1;
+                  const countKey = `level${level}Count`;
+                  const depositKey = `level${level}TotalDeposit`;
+                  const referralsKey = `level${level}Referrals`;
+                  const referrals =
+                    referralEarnings?.data?.data?.[referralsKey] || [];
 
-      {/* Main Table */}
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="p-2 border">Level</th>
-            <th className="p-2 border">Total Wallets</th>
-            <th className="p-2 border">Total Investments</th>
-            <th className="p-2 border">See More</th>
-          </tr>
-        </thead>
-        <tbody>
-          {/* Dynamically map levels */}
-          {Object.keys(referralEarnings?.data?.data || {})
-            .filter((key) => key.startsWith("level") && key.endsWith("Count"))
-            .map((key, index) => {
-              const level = index + 1;
-              const countKey = `level${level}Count`;
-              const depositKey = `level${level}TotalDeposit`;
-              const referralsKey = `level${level}Referrals`;
-              const referrals =
-                referralEarnings?.data?.data?.[referralsKey] || [];
-
-              return (
-                <React.Fragment key={level}>
-                  {/* Level Row */}
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-2 border text-center">{level}</td>
-                    <td className="p-2 border text-center">
-                      {referralEarnings?.data?.data?.[countKey] || 0}
-                    </td>
-                    <td className="p-2 border text-center">
-                      ₹{referralEarnings?.data?.data?.[depositKey] || 0}
-                    </td>
-                    <td className="p-2 border text-center">
-                      <button
-                        className="text-blue-500 focus:outline-none"
-                        onClick={() => toggleLevel(level)}
+                  return (
+                    <React.Fragment key={level}>
+                      <tr
+                        className={`${
+                          index % 2 === 0
+                            ? "bg-[#2B255A] bg-opacity-10"
+                            : "bg-[#2B255A] bg-opacity-30"
+                        } rounded-md hover:bg-[#2B255A] transition duration-300`}
                       >
-                        {expandedLevel === level ? "▲" : "▼"}
-                      </button>
-                    </td>
-                  </tr>
+                        <td className="p-3 pl-8 text-xs md:text-sm rounded-l-md">{level}</td>
+                        <td className="p-3 text-center text-xs md:text-sm">
+                          {referralEarnings?.data?.data?.[countKey] || 0}
+                        </td>
+                        <td className="p-3 text-center text-xs md:text-sm">
+                          ₹{referralEarnings?.data?.data?.[depositKey] || 0}
+                        </td>
+                        <td className="p-3 text-center text-gray-400 cursor-pointer rounded-r-md flex justify-center items-center space-x-2">
+                          <span onClick={() => toggleLevel(level)}>
+                            {expandedLevel === level ? (
+                              <FaChevronUp />
+                            ) : (
+                              <FaChevronDown />
+                            )}
+                          </span>
+                        </td>
+                      </tr>
 
-                  {/* Expanded Referrals Table */}
-                  {expandedLevel === level && (
-                    <tr>
-                      <td colSpan={4} className="p-2 border bg-gray-50">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="bg-gray-100">
-                              <th className="p-2 border">Sr. No</th>
-                              <th className="p-2 border">Wallet Address</th>
-                              <th className="p-2 border">Amount</th>
-                              <th className="p-2 border">Joining Date</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {referrals.map((referral, index) => (
-                              <tr key={index}>
-                                <td className="p-2 border text-center">
-                                  {index + 1}
-                                </td>
-                                <td className="p-2 border text-center">
-                                  {referral.walletAddress}
-                                </td>
-                                <td className="p-2 border text-center">
-                                  ₹{referral.depositAmount}
-                                </td>
-                                <td className="p-2 border text-center">
-                                  {formatDate(referral.createdAt)}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              );
-            })}
-        </tbody>
-      </table>
+                      {/* Expanded Referrals Table */}
+                      {expandedLevel === level && (
+                        <tr>
+                          <td colSpan={4} className="p-4 bg-[#1A1A2E] rounded-md">
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-gray-300 text-xs md:text-sm">
+                                <thead>
+                                  <tr className="bg-[#212D49] rounded-md text-base">
+                                    <th className="p-2 pl-6 text-left rounded-l-md">Sr. No</th>
+                                    <th className="p-2 text-center">Wallet Address</th>
+                                    <th className="p-2 text-center">Amount</th>
+                                    <th className="p-2 text-center rounded-r-md">Joining Date</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {referrals.map((referral, index) => (
+                                    <tr
+                                      key={index}
+                                      className="hover:bg-[#2B255A] transition duration-300"
+                                    >
+                                      <td className="p-2 pl-6">{index + 1}</td>
+                                      <td className="p-2 text-center truncate">
+                                        {referral.walletAddress}
+                                      </td>
+                                      <td className="p-2 text-center">
+                                        ₹{referral.depositAmount}
+                                      </td>
+                                      <td className="p-2 text-center">
+                                        {formatDate(referral.createdAt)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };

@@ -254,7 +254,7 @@ const RegistrationPage: React.FC = () => {
               To earn{" "}
               <span className="font-semibold text-black">referral income</span>,
               you must stake a minimum of
-              <span className="font-bold text-purple-600"> $200 SUL </span>
+              <span className="font-bold text-purple-600"> $200 POX </span>
               tokens.
             </p>
             <div className="mt-6 flex justify-center w-full">
