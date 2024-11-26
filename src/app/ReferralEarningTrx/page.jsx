@@ -16,15 +16,16 @@ const ReferralEarnings = () => {
   }, []);
 
   const fetchData = async () => {
-    const userReferralTreeData = await getAllReferralsTreeWeb2Api(userStateData?.dataObject?.token);
+    const userReferralTreeData = await getAllReferralsTreeWeb2Api("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzQ1NjZkN2U4ODQxYjI5YjgyYTc0NjAiLCJyb2xlIjoiVVNFUiIsImp0aSI6IjlmMGVmNWM5ZmY5YTJlNGU1OWQwMmNmZTFiMDY4M2U0ODY1M2ZlOTgiLCJ3YWxsZXRBZGRyZXNzIjoiUFBEdWR5NnVBUkxrSDE4Y3REN1JWVEZMbVRLcVZCR05WbyIsImlhdCI6MTczMjYwMzgzMH0.OUUMi-hXVXN5FnkOtbBxR77cSFo_uTdlRzGNI9zFU_k");
+    console.log({userReferralTreeData})
     setReferralEarnings(userReferralTreeData);
   };
 
-  const toggleLevel = () => {
+  const toggleLevel = (level) => {
     setExpandedLevel(expandedLevel === level ? null : level);
   };
 
-  const formatDate = () => {
+  const formatDate = (date) => {
     return new Date(date).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   };
 

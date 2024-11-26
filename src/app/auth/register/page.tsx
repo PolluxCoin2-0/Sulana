@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import {
   WalletIcon,
-  CurrencyDollarIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
+import LogoGray from "@/assests/LogoGray.svg";
 import Link from "next/link";
 import { getPolinkweb } from "@/lib/connectWallet";
 import { toast } from "react-toastify";
@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { SignBroadcastTransactionStatus } from "@/lib/signBroadcastTransactionStatus";
+import Image from "next/image";
 
 const RegistrationPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
@@ -317,7 +318,13 @@ const RegistrationPage: React.FC = () => {
                 placeholder="Sul Amount"
                 className="w-full px-10 md:px-14 py-3 md:py-5 rounded-xl bg-white/10 text-white placeholder:text-white/70 focus:ring-1 focus:ring-black focus:outline-none focus:shadow-lg transition duration-300 appearance-none"
               />
-              <CurrencyDollarIcon className="absolute top-1/2 left-3 md:left-4 h-6 w-6 md:h-8 md:w-8 text-white/60 group-focus-within:text-black transform -translate-y-1/2 transition duration-300" />
+              <Image
+              alt="gray-sul-logo"
+              src={LogoGray}
+              width={0}
+              height={0}
+              className="absolute top-1/2 left-3 md:left-4 h-6 w-6 md:h-8 md:w-8 text-white/60 group-focus-within:text-black transform -translate-y-1/2 transition duration-300"
+              />
             </div>
             {/* Referral Wallet Address Input */}
             <div className="relative group">
