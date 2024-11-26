@@ -1,17 +1,13 @@
 "use client";
 import { getAllReferralsTreeWeb2Api } from "@/api/apiFunctions";
-import { ReferralData } from "@/interface";
-import { RootState } from "@/redux/store";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
-const ReferralEarnings: React.FC = () => {
-  const [expandedLevel, setExpandedLevel] = useState<number | null>(null);
-  const userStateData = useSelector((state: RootState) => state?.wallet);
-  const [referralEarnings, setReferralEarnings] = useState<ReferralData | null>(
-    null
-  );
+const ReferralEarnings = () => {
+  const [expandedLevel, setExpandedLevel] = useState(null);
+  const userStateData = useSelector((state) => state?.wallet);
+  const [referralEarnings, setReferralEarnings] = useState(null);
 
   useEffect(() => {
     if (userStateData?.isLogin) {
@@ -20,18 +16,15 @@ const ReferralEarnings: React.FC = () => {
   }, []);
 
   const fetchData = async () => {
-    const userReferralTreeData = await getAllReferralsTreeWeb2Api(
-      "your-api-key",
-      1
-    );
+    const userReferralTreeData = await getAllReferralsTreeWeb2Api(userStateData?.dataObject?.walletAddress);
     setReferralEarnings(userReferralTreeData);
   };
 
-  const toggleLevel = (level: number) => {
+  const toggleLevel = () => {
     setExpandedLevel(expandedLevel === level ? null : level);
   };
 
-  const formatDate = (date: string) => {
+  const formatDate = () => {
     return new Date(date).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   };
 
@@ -50,7 +43,8 @@ const ReferralEarnings: React.FC = () => {
 
         {/* Main Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-white text-sm border-separate border-spacing-y-2">
+          {
+            referralEarnings?.data?.data ?    <table className="w-full text-white text-sm border-separate border-spacing-y-2">
             <thead>
               <tr className="bg-[#212D49] rounded-md text-xs md:text-base">
                 <th className="p-3 pl-8 text-left rounded-l-md">Level</th>
@@ -139,7 +133,10 @@ const ReferralEarnings: React.FC = () => {
                   );
                 })}
             </tbody>
-          </table>
+          </table>: 
+            <p className="text-white text-center font-bold text-xl py-4">No Data Found!</p>
+          }
+       
         </div>
       </div>
     </div>

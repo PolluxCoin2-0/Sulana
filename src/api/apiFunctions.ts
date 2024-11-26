@@ -146,6 +146,6 @@ export const stakeUnstakeByIdWeb2Api = async (id:string): Promise<stakeUnstakeby
 
 // GET ALL REFERRALS TREE 
 
-export const getAllReferralsTreeWeb2Api = async (token: string, pageNumber:number): Promise<ReferralData> => {
-  return getRequest<ReferralData>(API_ENDPOINTS.web2.getAllReferrals,token,{page:pageNumber, limit:10});
+export const getAllReferralsTreeWeb2Api = async (token: string): Promise<ReferralData> => {
+  return getRequest<ReferralData>(API_ENDPOINTS.web2.getAllReferrals,token);
 }
