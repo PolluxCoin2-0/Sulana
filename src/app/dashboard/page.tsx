@@ -311,7 +311,7 @@ const DashBoard: React.FC = () => {
 
   const handleReferralLinkCopy = () => {
     if (userStateData?.dataObject?.walletAddress) {
-      navigator.clipboard.writeText(`https://sulaana.com/sulmine/referral/${userStateData?.dataObject?.walletAddress}`)
+      navigator.clipboard.writeText(`http://localhost:3000/referral/${userStateData?.dataObject?.walletAddress}`)
         .then(() => {
           toast.success("Referral link copied to clipboard");
         })

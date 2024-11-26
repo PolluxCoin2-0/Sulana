@@ -18,7 +18,7 @@ import {
 } from "@/api/apiFunctions";
 import { checkStakeBalance } from "@/lib/checkStakeBalance";
 import Loader from "@/app/components/Loader";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams  } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { SignBroadcastTransactionStatus } from "@/lib/signBroadcastTransactionStatus";
@@ -33,6 +33,15 @@ const RegistrationPage: React.FC = () => {
   const [sulAmount, setSulAmount] = useState<string>("");
   const router = useRouter();
   const userStateData = useSelector((state: RootState)=>state?.wallet);
+  const searchParams = useSearchParams(); // Get the search parameters from the URL
+  const referralAddressfromURL = searchParams.get("referralAddress");
+  console.log("Referral Address:", referralAddressfromURL);
+
+  useEffect(() => {
+    if (referralAddressfromURL) {
+      setReferralAddress(referralAddressfromURL as string); // Set referral wallet address
+    }
+  }, [referralAddress]);
 
   const handleCloseModal = (): void => {
     setIsModalOpen(false);

@@ -5,6 +5,7 @@ import Navbar from "./components/layout/Navbar/page";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ReduxProvider from "@/redux/reduxProvider";
+import ReferralRedirect from "./ReferralRedirect/page";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -44,6 +45,7 @@ export default function RootLayout({
             pauseOnFocusLoss
             toastClassName="custom-toast"
           />
+           <ReferralRedirect />
         <Navbar />
         {children}
         </ReduxProvider>
