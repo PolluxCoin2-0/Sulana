@@ -16,7 +16,7 @@ const ReferralEarnings = () => {
   }, []);
 
   const fetchData = async () => {
-    const userReferralTreeData = await getAllReferralsTreeWeb2Api(userStateData?.dataObject?.walletAddress);
+    const userReferralTreeData = await getAllReferralsTreeWeb2Api(userStateData?.dataObject?.token);
     setReferralEarnings(userReferralTreeData);
   };
 
