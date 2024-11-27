@@ -327,39 +327,21 @@ const DashBoard: React.FC = () => {
     }
   }
 
+
   const handleReferralLinkCopy = () => {
-    const walletAddress = userStateData?.dataObject?.walletAddress;
-    if (walletAddress) {
-      const referralLink = `https://sulmine.sulaana.com/referral/${walletAddress}`;
-      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-        // Use Clipboard API if available
-        navigator.clipboard.writeText(referralLink)
-          .then(() => {
-            toast.success("Referral link copied to clipboard");
-          })
-          .catch((error) => {
-            toast.error("Failed to copy referral link");
-            console.error(error);
-          });
-      } else {
-        // Fallback for unsupported browsers/environments
-        try {
-          const textArea = document.createElement("textarea");
-          textArea.value = referralLink;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
+    if (userStateData?.dataObject?.walletAddress) {
+      navigator.clipboard.writeText(`https://sulmine.sulaana.com/referral/${userStateData?.dataObject?.walletAddress}`)
+        .then(() => {
           toast.success("Referral link copied to clipboard");
-        } catch (error) {
+        })
+        .catch((error) => {
           toast.error("Failed to copy referral link");
           console.error(error);
-        }
-      }
+        });
     } else {
       toast.error("Wallet address is not available");
     }
-  };  
+  };
 
   return (
     <div className="min-h-screen bg-black px-2 md:px-4 py-7">
