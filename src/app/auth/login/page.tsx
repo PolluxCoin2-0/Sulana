@@ -54,6 +54,7 @@ const Login: React.FC = () => {
       // Redirect to home page or any other desired page
       router.push("/dashboard");
     } catch (error) {
+      toast.error("Invalid wallet address or login failed.");
       console.log("error", error);
     } finally {
       setIsLoading(false);
