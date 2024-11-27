@@ -328,19 +328,38 @@ const DashBoard: React.FC = () => {
   }
 
   const handleReferralLinkCopy = () => {
-    if (userStateData?.dataObject?.walletAddress) {
-      navigator.clipboard.writeText(`https://sulmine.sulaana.com/referral/${userStateData?.dataObject?.walletAddress}`)
-        .then(() => {
+    const walletAddress = userStateData?.dataObject?.walletAddress;
+    if (walletAddress) {
+      const referralLink = `https://sulmine.sulaana.com/referral/${walletAddress}`;
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        // Use Clipboard API if available
+        navigator.clipboard.writeText(referralLink)
+          .then(() => {
+            toast.success("Referral link copied to clipboard");
+          })
+          .catch((error) => {
+            toast.error("Failed to copy referral link");
+            console.error(error);
+          });
+      } else {
+        // Fallback for unsupported browsers/environments
+        try {
+          const textArea = document.createElement("textarea");
+          textArea.value = referralLink;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
           toast.success("Referral link copied to clipboard");
-        })
-        .catch((error) => {
+        } catch (error) {
           toast.error("Failed to copy referral link");
           console.error(error);
-        });
+        }
+      }
     } else {
       toast.error("Wallet address is not available");
     }
-  };
+  };  
 
   return (
     <div className="min-h-screen bg-black px-2 md:px-4 py-7">
@@ -351,8 +370,12 @@ const DashBoard: React.FC = () => {
         className="bg-[linear-gradient(90.11deg,rgba(137,34,179,0.264)_0.11%,rgba(43,37,90,0.1782)_47.67%,rgba(105,26,139,0.264)_99.92%)]
          py-[18px] px-4 lg:px-8 rounded-xl flex justify-between items-center"
       >
-        <p className="text-white font-bold text-base truncate">
+        <p className="hidden xl:block text-white font-bold text-base truncate">
           Referral link: <span className="font-normal">{userStateData?.dataObject?.walletAddress as string}</span>
+        </p>
+        <p className="block xl:hidden text-white font-bold text-base truncate">
+          Referral link: <span className="font-normal">
+            {`${userStateData?.dataObject?.walletAddress && userStateData.dataObject.walletAddress.slice(0, 8)}...${userStateData?.dataObject?.walletAddress && userStateData.dataObject.walletAddress.slice(-8)}`}</span>
         </p>
         <svg
         onClick={handleReferralLinkCopy}
