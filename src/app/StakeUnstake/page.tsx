@@ -59,8 +59,8 @@ const StakeUnstakePage: React.FC = () => {
 
     try {
       // CHECK MINT COUNT IS GREATER THAN OR EQUAL TO 10
-      if(mintCount<10){
-        toast.error("Mint count should be greater than or equal to 10.");
+      if(mintCount!==1000){
+        toast.error("Mint count should be greater than or equal to 1000.");
         return;
       }
 

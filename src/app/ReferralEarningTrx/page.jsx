@@ -49,7 +49,7 @@ const ReferralEarnings = () => {
             Wallet Address: {userStateData?.dataObject?.walletAddress || "N/A"}
           </p>
           <p className="text-sm md:text-lg font-bold mb-4">
-            Total Balance: ₹{referralEarnings?.data?.data?.allLevelFunds || 0}
+            Total SUL Balance: {referralEarnings?.data?.data?.allLevelFunds || 0}
           </p>
         </div>
 
@@ -96,7 +96,7 @@ const ReferralEarnings = () => {
                             {referralEarnings?.data?.data?.[countKey] || 0}
                           </td>
                           <td className="p-3 text-center text-xs md:text-sm">
-                            ₹{referralEarnings?.data?.data?.[depositKey] || 0}
+                            {referralEarnings?.data?.data?.[depositKey] || 0}
                           </td>
                           <td className="p-3 text-center text-gray-400 cursor-pointer rounded-r-md flex justify-center items-center space-x-2">
                             <span onClick={() => toggleLevel(level)}>
@@ -147,7 +147,7 @@ const ReferralEarnings = () => {
                                           {referral.walletAddress}
                                         </td>
                                         <td className="p-2 text-center">
-                                          ₹{referral.depositAmount}
+                                          {referral.depositAmount}
                                         </td>
                                         <td className="p-2 text-center">
                                           {formatDate(referral.createdAt)}

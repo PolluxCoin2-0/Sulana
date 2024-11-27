@@ -53,7 +53,7 @@ const ClaimReward: React.FC= () => {
 
         <div className="flex flex-row justify-between items-center px-2 pb-6">
             <p className="text-white font-bold">Address : {userStateData?.dataObject?.walletAddress}</p>
-            <p className="text-white font-bold">Claimed Reward : {claimRewardAmount}</p>
+            <p className="text-white font-bold">Earned Reward : {claimRewardAmount}</p>
         </div>
       {/* Table Header */}
       <div className="bg-[#212D49] rounded-xl text-white flex flex-row items-center justify-between py-2 min-w-[850px] md:min-w-0">

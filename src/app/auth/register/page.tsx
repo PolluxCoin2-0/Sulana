@@ -92,8 +92,8 @@ const RegistrationPage: React.FC = () => {
         return;
       }
 
-      if(parseInt(sulAmount)<50){
-        toast.error("Sul amount should be greater than or equal to 50.");
+      if(parseInt(sulAmount)<100){
+        toast.error("Sul amount should be greater than or equal to 100.");
         setIsLoading(false);
         return;
       }
