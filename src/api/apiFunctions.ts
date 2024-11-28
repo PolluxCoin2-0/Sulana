@@ -149,3 +149,9 @@ export const stakeUnstakeByIdWeb2Api = async (id:string): Promise<stakeUnstakeby
 export const getAllReferralsTreeWeb2Api = async (token: string): Promise<ReferralData> => {
   return getRequest<ReferralData>(API_ENDPOINTS.web2.getAllReferrals,token);
 }
+
+// GET CAPPING AMOUNT
+export const getCappingAmountApi = async (walletAddress: string): Promise<referralRewardInterface> => {
+  return postRequest<referralRewardInterface>(API_ENDPOINTS.user.getCappingRewards,{walletAddress});
+}
+

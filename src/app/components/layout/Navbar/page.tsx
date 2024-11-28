@@ -82,18 +82,29 @@ const Navbar: React.FC = () => {
           />
         </Link>
 
-        <div className="flex items-center space-x-2 md:space-x-8">
-          <Link href="/StakeUnstake" className="text-white font-bold text-base md:text-xl cursor-pointer">
-            Unstake
-          </Link>
+        <div className="flex items-center space-x-2 md:space-x-5">
+
           {/* Connect Wallet Button */}
-          <button
-            onClick={handleSignOut}
+          <Link
+            href="/StakeUnstake"
             className="whitespace-nowrap bg-gradient-to-r from-[#572EAC] to-[#8922B3] text-sm md:text-base text-white font-medium px-3 md:px-6 py-2 rounded-lg shadow-lg 
         hover:scale-105 transition-transform"
           >
-            Sign out
+          Unstake
+          </Link>
+
+          <button
+            onClick={handleSignOut}
+            className="relative p-0.5 inline-flex items-center justify-center font-bold overflow-hidden group rounded-xl"
+          >
+            <span className="w-full h-full bg-gradient-to-r from-[#572EAC] to-[#8922B3] group-hover:from-[#572EAC] group-hover:to-[#8922B3] absolute"></span>
+            <span className="relative px-3 md:px-6 py-2 transition-all ease-out bg-gray-900 rounded-xl group-hover:bg-opacity-0 duration-400">
+              <span className="relative text-white">
+              Sign out
+                </span>
+            </span>
           </button>
+
         </div>
       </div>
     </nav>

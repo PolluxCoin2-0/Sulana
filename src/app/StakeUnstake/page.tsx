@@ -117,9 +117,9 @@ const StakeUnstakePage: React.FC = () => {
           <p className="font-bold px-8 py-2 w-[25%] text-left">Invest Date</p>
           <p className="font-bold px-8 py-2 w-[25%] text-center">Amount</p>
           <p className="font-bold px-4 py-2 w-[25%] text-center">
-            Maturity Date
+            Mint Count
           </p>
-          <p className="font-bold px-8 py-2 w-[25%] text-right">Unstake</p>
+          <p className="font-bold px-8 py-2 w-[25%] text-right">Action</p>
         </div>
 
         {/* Data Row Section */}
@@ -137,7 +137,7 @@ const StakeUnstakePage: React.FC = () => {
                     {item?.amount}
                   </p>
                   <p className="px-4 py-2 w-[25%] text-left lg:text-center">
-                    {new Date(item?.maturityDuration).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
+                    {item?.mintCount} / 1000
                   </p>
                   <div className="lg:w-[25%] px-4 flex justify-end">
                     {item.isLoading ? (
