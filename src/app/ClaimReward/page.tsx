@@ -53,13 +53,13 @@ const ClaimReward: React.FC= () => {
 
         <div className="flex flex-row justify-between items-center px-2 pb-6">
             <p className="text-white font-bold">Address : {userStateData?.dataObject?.walletAddress}</p>
-            <p className="text-white font-bold">Earned Reward : {claimRewardAmount}</p>
+            <p className="text-white font-bold">Total Clammed Sul : {claimRewardAmount}</p>
         </div>
       {/* Table Header */}
       <div className="bg-[#212D49] rounded-xl text-white flex flex-row items-center justify-between py-2 min-w-[850px] md:min-w-0">
         <p className="font-bold px-8 py-2 w-[50%] text-left">Transaction</p>
-        <p className="font-bold px-4 py-2 w-[25%] text-center">Mint Time</p>
-        <p className="font-bold px-8 py-2 w-[25%] text-right">Reward</p>
+        <p className="font-bold px-4 py-2 w-[25%] text-left">Clammed Date and Time</p>
+        <p className="font-bold px-8 py-2 w-[25%] text-right">Clammed Sul</p>
       </div>
 
       {/* Transactions */}
@@ -70,7 +70,7 @@ const ClaimReward: React.FC= () => {
         >
           <p className="block xl:hidden px-8 py-2 w-[50%] text-left">{`${transaction?.trxId.slice(0,10)}...${transaction?.trxId.slice(-10)}`}</p>
           <p className="hidden xl:block px-8 py-2 w-[50%] text-left">{transaction?.trxId}</p>
-          <p className="px-4 py-2 w-[25%] text-center">{new Date(transaction?.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
+          <p className="px-4 py-2 w-[25%] text-left">{new Date(transaction?.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
           <p className="px-8 py-2 w-[25%] text-right">{transaction?.amount}</p>
         </Link>
       ))
