@@ -49,7 +49,7 @@ const ReferralEarnings = () => {
             Wallet Address: {userStateData?.dataObject?.walletAddress || "N/A"}
           </p>
           <p className="text-sm md:text-lg font-bold mb-4">
-            Total SUL Balance: {referralEarnings?.data?.data?.allLevelFunds || 0}
+          Total Team Business: {referralEarnings?.data?.data?.allLevelFunds || 0}
           </p>
         </div>
 
