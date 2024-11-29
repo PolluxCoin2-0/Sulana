@@ -41,6 +41,7 @@ const DashBoard: React.FC = () => {
   const [allUserCount ,  setAllUserCount] = useState<number>(0);
   const [directBonus, setDirectBonus] = useState<number>(0);
   const [cappingAmount, setCappingAmount] = useState<number>(0);
+  const [contractAmount, setContractAmount] = useState<number>(0);
 
   useEffect(()=>{
     if(userStateData?.isLogin){
@@ -90,6 +91,12 @@ const DashBoard: React.FC = () => {
     const cappingAmounData = await getCappingAmountApi(userStateData?.dataObject?.walletAddress as string);
     console.log({cappingAmounData});
     setCappingAmount(cappingAmounData?.data);
+
+    // GET CONTRACT SUL AMOUNT
+    const sulAmountData = await getBalanceApi("PFuM9uxKQssQt7qDXXAWddu6dA2K5htL4m");
+    console.log({sulAmountData});
+    setContractAmount(sulAmountData?.data);
+
     setComponentLoading(false);
   }
   
@@ -399,9 +406,9 @@ const DashBoard: React.FC = () => {
          py-[18px] px-4 lg:px-8 rounded-xl flex justify-between items-center"
       >
         <p className="text-white font-bold text-base truncate">
-        Total Users :
+        Total Users / Total Staked :
         </p>
-        <p className="text-white font-bold text-base">{allUserCount}</p>
+        <p className="text-white font-bold text-base">{allUserCount} / {contractAmount}</p>
       </div>
       </div>
 
