@@ -1,5 +1,5 @@
 "use client";
-import { getAllReferralsTreeWeb2Api } from "@/api/apiFunctions";
+import { getAllReferralsTreeWeb2Api, getTotalTeamAmountApi } from "@/api/apiFunctions";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
@@ -9,6 +9,7 @@ const ReferralEarnings = () => {
   const userStateData = useSelector((state) => state?.wallet);
   const [referralEarnings, setReferralEarnings] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [teamAmounts, setTeamAmounts] = useState({});
 
   useEffect(() => {
     if (userStateData?.isLogin) {
@@ -32,12 +33,28 @@ const ReferralEarnings = () => {
     }
   };
 
-  const toggleLevel = (level) => {
-    setExpandedLevel(expandedLevel === level ? null : level);
+  const toggleLevel = (level, walletAddress) => {
+    const isExpanded = expandedLevel === level;
+    setExpandedLevel(isExpanded ? null : level);
+    if (!isExpanded && !teamAmounts[level]) {
+      fetchTeamAmount(walletAddress, level);
+    }
   };
 
   const formatDate = (date) => {
     return new Date(date).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  };
+
+  const fetchTeamAmount = async (walletAddress, level) => {
+    try {
+      const totalTeamAmountData = await getTotalTeamAmountApi(walletAddress);
+      setTeamAmounts((prev) => ({
+        ...prev,
+        [level]: totalTeamAmountData,
+      }));
+    } catch (error) {
+      console.error("Error fetching team amount:", error);
+    }
   };
 
   return (
@@ -98,8 +115,11 @@ const ReferralEarnings = () => {
                           <td className="p-3 text-center text-xs md:text-sm">
                             {referralEarnings?.data?.data?.[depositKey] || 0}
                           </td>
-                          <td className="p-3 text-center text-gray-400 cursor-pointer rounded-r-md flex justify-center items-center space-x-2">
-                            <span onClick={() => toggleLevel(level)}>
+                          <td className="p-3 text-center text-gray-400 cursor-pointer rounded-r-md flex justify-center items-center space-x-2"
+                         onClick={() =>
+                          toggleLevel(level, userStateData?.dataObject?.walletAddress)
+                        }>
+                            <span>
                               {expandedLevel === level ? (
                                 <FaChevronUp />
                               ) : (
@@ -129,8 +149,11 @@ const ReferralEarnings = () => {
                                       <th className="p-2 text-center">
                                         Amount
                                       </th>
-                                      <th className="p-2 text-center rounded-r-md">
+                                      <th className="p-2 text-center">
                                         Joining Date
+                                      </th>
+                                      <th className="p-2 text-right pr-6 rounded-r-md">
+                                       Team Amount
                                       </th>
                                     </tr>
                                   </thead>
@@ -151,6 +174,9 @@ const ReferralEarnings = () => {
                                         </td>
                                         <td className="p-2 text-center">
                                           {formatDate(referral.createdAt)}
+                                        </td>
+                                        <td className="p-2 text-right pr-6">
+                                          {teamAmounts[level] || "Loading..."}
                                         </td>
                                       </tr>
                                     ))}

@@ -155,3 +155,8 @@ export const getCappingAmountApi = async (walletAddress: string): Promise<referr
   return postRequest<referralRewardInterface>(API_ENDPOINTS.user.getCappingRewards,{walletAddress});
 }
 
+// GET TOTAL TEAM AMOUNT
+export const getTotalTeamAmountApi = async (walletAddress: string): Promise<referralRewardInterface> => {
+  return postRequest<referralRewardInterface>(API_ENDPOINTS.web2.calculateTotalStakedAmount,{walletAddress});
+}
+
