@@ -5,7 +5,7 @@ import {
  } from "./apiGenericMethods";
 import API_ENDPOINTS from "./apiEndpoints"; // Import the API endpoints
 import axios from "axios";
-import { allCountUser, allMintTransactionResponseInterface, BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, LoginApiResponse, ReferralData, referralRewardInterface, registerInterface, stakeBalanceInterface, stakeUnstakebyIdInterface, Transaction,UpdateStakeResponseInterface,userDetailsInterface, web2CreateMintInterface } from "@/interface";
+import { allCountUser, allMintTransactionResponseInterface, BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, LoginApiResponse, ReferralData, referralRewardInterface, registerInterface, stakeBalanceInterface, stakeUnstakebyIdInterface, Transaction,UpdateStakeResponseInterface,userDetailsInterface, userSRResponse, web2CreateMintInterface } from "@/interface";
 
 const FULL_NODE_TRANSACTION_URL = process.env.NEXT_PUBLIC_FULL_NODE_TRANSACTION_URL || "";
 
@@ -159,4 +159,15 @@ export const getCappingAmountApi = async (walletAddress: string): Promise<referr
 export const getTotalTeamAmountApi = async (walletAddress: string): Promise<referralRewardInterface> => {
   return postRequest<referralRewardInterface>(API_ENDPOINTS.web2.calculateTotalStakedAmount,{walletAddress});
 }
+
+// GET USER IS SR OR NOT
+export const getUserIsSR = async (walletAddress: string): Promise<userSRResponse> => {
+  try {
+    const userSRResponse = await axios.get(`https://node.poxscan.io/wallet/getUnderControl?userAddress=${walletAddress}`);
+    return userSRResponse?.data as userSRResponse;
+  } catch (error) {
+    console.error("Error in user SR API:", error);
+    throw new Error("Failed to get SR details.");
+  }
+};
 

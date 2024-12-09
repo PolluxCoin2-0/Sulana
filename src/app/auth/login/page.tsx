@@ -7,9 +7,9 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 import { getPolinkweb } from "@/lib/connectWallet";
 import { useRouter } from "next/navigation";
-import { loginApi } from "@/api/apiFunctions";
+import { getUserIsSR, loginApi } from "@/api/apiFunctions";
 import { useDispatch } from "react-redux";
-import { setDataObject, setIsLogin } from "@/redux/slice";
+import { setDataObject, setIsLogin, setIsUserSR } from "@/redux/slice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import Loader from "@/app/components/Loader";
@@ -40,16 +40,31 @@ const Login: React.FC = () => {
       if (!walletAddress || !walletAddress.wallet_address) {
         throw new Error("Wallet address not found.");
       }
+    let userWalletAddress = walletAddress?.wallet_address;
+
+      // CHECK USER IS SR OR NOT
+      const userSRApiData = await getUserIsSR(userWalletAddress);
+      console.log( userSRApiData)
+
+      if(userSRApiData?.message==="adderss undercontrol found"){
+        userWalletAddress = userSRApiData?.data;
+        dispatch(setIsUserSR(true));
+      }
 
       // CALL LOGIN API
-      const loginApiData = await loginApi(walletAddress?.wallet_address);
+      const loginApiData = await loginApi(userWalletAddress);
       console.log("loginApiData", loginApiData);
       if(loginApiData?.statusCode !==200){
         toast.error("Invalid wallet address or login failed.");
         throw new Error("Invalid wallet address or login failed.");
       }
       dispatch(setIsLogin(true));
-      dispatch(setDataObject(loginApiData?.data));
+       // Update loginApi data object with walletAddress if userSRApiData condition is true
+  const updatedLoginData = {
+    ...loginApiData?.data,
+    walletAddress: userWalletAddress,
+  };
+      dispatch(setDataObject(updatedLoginData));
       toast.success("Login successful");
       // Redirect to home page or any other desired page
       router.push("/dashboard");

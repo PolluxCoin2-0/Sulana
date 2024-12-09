@@ -91,6 +91,7 @@ interface walletStateInterface {
     message?: string;
   };
   isLogin: boolean;
+  isUserSR:boolean;
 }
 
 interface referralRewardInterface {
@@ -212,7 +213,6 @@ interface allCountUser {
   message: string,
 }
 
-
 interface stakeUnstakebyIdInterface {
     data: {
         success: boolean,
@@ -239,7 +239,6 @@ interface stakeUnstakebyIdInterface {
     statusCode: number,
     message: string,
 }
-
 interface Referral {
   walletAddress: string;
   referredBy: string;
@@ -264,6 +263,12 @@ interface ReferralData {
   message: string;
 }
 
+interface userSRResponse {
+   status_code: string;
+   status_text: string;
+   message: string;
+   data: string;
+}
 
 export type {
   LoginApiResponse,
@@ -289,4 +294,5 @@ export type {
   allCountUser,
   stakeUnstakebyIdInterface,
   ReferralData,
+  userSRResponse
 };

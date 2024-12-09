@@ -22,6 +22,7 @@ declare global {
       getDetails: () => Promise<object>;
       signdata: (data: object) => Promise<string []>;
       broadcast: (data: object) => Promise<string []>;
+      multiSign: (data: object) => Promise<string []>;
     };
   }
 }

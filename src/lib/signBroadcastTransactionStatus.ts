@@ -8,14 +8,20 @@ interface TransactionResponse {
   transactionStatus: string;
 }
 
-export const SignBroadcastTransactionStatus = async (rawData: object): Promise<TransactionResponse> => {
+export const SignBroadcastTransactionStatus = async (rawData: object, isUserSr:boolean): Promise<TransactionResponse> => {
   try {
     if (!window.pox) {
       throw new Error("Wallet extension is not available.");
     }
 
     // SIGN TRANSACTION
-    const signedTransaction = await window.pox.signdata(rawData);
+    let signedTransaction = null;
+    if (isUserSr) {
+      signedTransaction = await window.pox.multiSign(rawData);
+    } else {
+      signedTransaction = await window.pox.signdata(rawData);
+    }
+    
     console.log({ signedTransaction });
 
     if (signedTransaction[2] !== "Sign data Successfully") {

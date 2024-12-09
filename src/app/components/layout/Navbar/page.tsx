@@ -4,7 +4,7 @@ import Logo from "@/assests/LogoWithText.svg";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
-import { setDataObject, setIsLogin } from "@/redux/slice";
+import { setDataObject, setIsLogin, setIsUserSR } from "@/redux/slice";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -23,6 +23,7 @@ const Navbar: React.FC = () => {
   const handleSignOut = () => {
     // Dispatch to reset the state
     dispatch(setIsLogin(false));
+    dispatch(setIsUserSR(false));
     dispatch(setDataObject(undefined));
 
     // Show toast message

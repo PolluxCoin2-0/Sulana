@@ -51,53 +51,53 @@ const DashBoard: React.FC = () => {
 
   const fetchData = async()=>{
     setComponentLoading(true);
-    
-    // USER DETAILS
-    const userDetailsApiData = await getUserDetailsApi(userStateData?.dataObject?.walletAddress as string);
-    console.log({userDetailsApiData});
-    setUserDetails(userDetailsApiData?.data)
 
-    // USER REFERRAL REWARD
-    const referralRewardAPiData = await referralRewardApi(userStateData?.dataObject?.walletAddress as string);
-    console.log({referralRewardAPiData});
-    setReferralAmount(referralRewardAPiData?.data);
+    const walletAddress = userStateData?.dataObject?.walletAddress as string;
+    const token = userStateData?.dataObject?.token as string;
 
-    // USER ALL STAKES DATA
-    const stakesDataArray = await userAllStakesApi(userStateData?.dataObject?.token as string);
-    console.log({stakesDataArray});
-    const updatedStakes = stakesDataArray.data.transactions.map((item: TransactionInterface) => ({
-      ...item,
-      isLoading: false, // Once data is fetched, set isLoading to false
-    }));
-    console.log({updatedStakes});
-    setStakedArray(updatedStakes);
+    try {
+      const [
+        userDetailsApiData,
+        referralRewardAPiData,
+        stakesDataArray,
+        claimRewardApiData,
+        userCountDataApi,
+        bonusData,
+        cappingAmountData,
+        sulAmountData,
+      ] = await Promise.all([
+        getUserDetailsApi(walletAddress),
+        referralRewardApi(walletAddress),
+        userAllStakesApi(token),
+        claimRewardAmountApi(walletAddress),
+        getAllUserCountWeb2Api(),
+        getDirectBonusApi(walletAddress),
+        getCappingAmountApi(walletAddress),
+        getBalanceApi("PFuM9uxKQssQt7qDXXAWddu6dA2K5htL4m"),
+      ]);
 
-    // GET ALL CLAIM REWARD AMOUNT
-    const claimRewardApiData = await claimRewardAmountApi(userStateData?.dataObject?.walletAddress as string);
-    console.log({claimRewardApiData});
-    setClaimRewardAmount(claimRewardApiData?.data);
+      // Update states as data is received
+      setUserDetails(userDetailsApiData?.data);
+      setReferralAmount(referralRewardAPiData?.data);
 
-    // GET ALL USER COUNT
-    const userCountDataApi = await getAllUserCountWeb2Api();
-    console.log({userCountDataApi});
-    setAllUserCount(userCountDataApi?.data);
+      const updatedStakes = stakesDataArray.data.transactions.map(
+        (item: TransactionInterface) => ({
+          ...item,
+          isLoading: false,
+        })
+      );
+      setStakedArray(updatedStakes);
 
-    // GET DIRECT BONUS 
-    const bonusData = await getDirectBonusApi(userStateData?.dataObject?.walletAddress as string);
-    console.log({bonusData});
-    setDirectBonus(bonusData?.data);
-
-    // GET CAPPING AMOUNT
-    const cappingAmounData = await getCappingAmountApi(userStateData?.dataObject?.walletAddress as string);
-    console.log({cappingAmounData});
-    setCappingAmount(cappingAmounData?.data);
-
-    // GET CONTRACT SUL AMOUNT
-    const sulAmountData = await getBalanceApi("PFuM9uxKQssQt7qDXXAWddu6dA2K5htL4m");
-    console.log({sulAmountData});
-    setContractAmount(sulAmountData?.data);
-
-    setComponentLoading(false);
+      setClaimRewardAmount(claimRewardApiData?.data);
+      setAllUserCount(userCountDataApi?.data);
+      setDirectBonus(bonusData?.data);
+      setCappingAmount(cappingAmountData?.data);
+      setContractAmount(sulAmountData?.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally{
+      setComponentLoading(false);
+    }
   }
   
   if(!userStateData?.isLogin){
@@ -165,7 +165,7 @@ const DashBoard: React.FC = () => {
         throw new Error("Approval Failed!");
       }
 
-      const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(approvalRawData?.data?.transaction);
+      const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(approvalRawData?.data?.transaction, userStateData?.isUserSR);
       if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
@@ -178,7 +178,7 @@ const DashBoard: React.FC = () => {
         throw new Error("Claim Reward Failed!");
       }
 
-      const stakeSignBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(stakedData?.data?.transaction);
+      const stakeSignBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(stakedData?.data?.transaction, userStateData?.isUserSR);
       if (stakeSignBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
@@ -234,7 +234,7 @@ const DashBoard: React.FC = () => {
       }
 
       // SIGN TRANSACTION
-      const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(claimRewardData?.data?.transaction);
+      const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(claimRewardData?.data?.transaction, userStateData?.isUserSR);
       if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
@@ -296,7 +296,7 @@ const DashBoard: React.FC = () => {
       }
       
       // SIGN TRANSACTION
-      const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(mintData?.data?.transaction);
+      const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(mintData?.data?.transaction, userStateData?.isUserSR);
       if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");

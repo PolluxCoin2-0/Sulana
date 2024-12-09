@@ -61,11 +61,3 @@ export const checkTransactionStatus = async (trxHash: string): Promise<string | 
 
   return verify;
 };
-
-
-
-// if (verify?.result !== "SUCCESS") {
-//   toast.error("Registration Failed!");
-//   setRegisterLoading(false);
-//   return;
-// }

@@ -5,6 +5,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 const initialState: walletStateInterface = {
   dataObject: undefined,
   isLogin: false,
+  isUserSR:false,
 };
 
 // Create the slice with proper types for reducers
@@ -16,11 +17,14 @@ const walletSlice = createSlice({
       state.dataObject = action.payload;
     },
     setIsLogin: (state, action: PayloadAction<boolean>) => {
-      state.isLogin = action.payload;  // Set the login status
+      state.isLogin = action.payload;
+    },
+    setIsUserSR: (state, action: PayloadAction<boolean>) => {
+      state.isUserSR = action.payload;
     },
   },
 });
 
 // Export the action and reducer
-export const { setDataObject, setIsLogin} = walletSlice.actions;
+export const { setDataObject, setIsLogin, setIsUserSR} = walletSlice.actions;
 export default walletSlice.reducer;
