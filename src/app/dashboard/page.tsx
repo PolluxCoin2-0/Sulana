@@ -99,6 +99,8 @@ const DashBoard: React.FC = () => {
       setComponentLoading(false);
     }
   }
+
+  console.log({stakedArray})
   
   if(!userStateData?.isLogin){
    router.push("/");
@@ -174,8 +176,8 @@ const DashBoard: React.FC = () => {
       const stakedData = await stakeSulBalanceApi(userStateData?.dataObject?.walletAddress as string, stakeAmount, userStateData?.dataObject?.referredBy as string);
       console.log({stakedData});
       if (!stakedData?.data?.transaction) {
-        toast.error("Claim Reward Failed!");
-        throw new Error("Claim Reward Failed!");
+        toast.error("Staked Failed!");
+        throw new Error("Saked Failed!");
       }
 
       const stakeSignBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(stakedData?.data?.transaction, userStateData?.isUserSR);

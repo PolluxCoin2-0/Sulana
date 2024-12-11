@@ -1,6 +1,8 @@
+import API_ENDPOINTS from "@/api/apiEndpoints";
 import axios from "axios";
 
 const FULL_NODE_TRANSACTION_URL = process.env.NEXT_PUBLIC_FULL_NODE_TRANSACTION_URL || "";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 interface TransactionReceipt {
   energy_fee: number;
@@ -20,6 +22,31 @@ interface ApiResponse {
   receipt?: TransactionReceipt;
   result: string;
   resMessage?: string;
+}
+
+interface CheckTrxStatus {
+  data: {
+    id: string,
+    fee: number,
+    blockNumber: number,
+    blockTimeStamp:number,
+    contractResult:string[],
+    contract_address: string,
+    receipt: {
+        energy_usage: number,
+        energy_fee: number,
+        energy_usage_total: number,
+        net_fee: number,
+        result: string
+    },
+    log: [
+        {
+            address:string,
+            topics:string[];
+            data:string
+        }
+    ]
+},
 }
 
 export const checkTransactionStatus = async (trxHash: string): Promise<string | null> => {
@@ -55,8 +82,30 @@ export const checkTransactionStatus = async (trxHash: string): Promise<string | 
     }
   }
 
+
   if (!verify) {
     console.warn("Transaction receipt not found after maximum attempts.");
+
+    const secondCheckForTransactionStatus = async (): Promise<string | null> => {
+      try {
+        const secondResponse = await axios.post<CheckTrxStatus>(
+          BASE_URL + API_ENDPOINTS.user.checkTrxStatus,
+          {
+            trxId: trxHash,
+          }
+        );
+        const secondData = secondResponse.data;
+        console.log("Second check response data:", secondData);
+        if (secondData.data.receipt) {
+          return secondData.data.receipt.result;
+        }
+      } catch (error) {
+        console.error("Second check failed with error:", error);
+      }
+      return null;
+    };
+
+    verify = await secondCheckForTransactionStatus();
   }
 
   return verify;
