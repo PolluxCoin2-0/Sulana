@@ -174,7 +174,7 @@ const RegistrationPage: React.FC = () => {
           throw new Error("Transaction failed!");
         }
 
-           // Call the API to register the user with the wallet address and referral address
+      // Call the API to register the user with the wallet address and referral address
       const registerApiResponseData = await registerApi(
         userWalletAddress,
         sulAmount,
