@@ -270,6 +270,17 @@ interface userSRResponse {
    data: string;
 }
 
+interface lastMintTimeResponseFromWeb3 {
+  data :{
+    amount: number,
+    startTime: string,
+    lastMintedAt: string,
+    mintCount: number,
+    maturityDuration: number,
+    beforeMaturityDuration: number
+  }
+}
+
 export type {
   LoginApiResponse,
   getbalanceInterface,
@@ -294,5 +305,6 @@ export type {
   allCountUser,
   stakeUnstakebyIdInterface,
   ReferralData,
-  userSRResponse
+  userSRResponse,
+  lastMintTimeResponseFromWeb3
 };

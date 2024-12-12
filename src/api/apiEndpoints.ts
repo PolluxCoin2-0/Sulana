@@ -17,6 +17,7 @@ const API_ENDPOINTS = {
       getClaimedRewards : "/getClaimedRewards",
       getCappingRewards : "/getCappingRewards",
       checkTrxStatus : "/checkTrxStatus",
+      getUserStakes : "/getUserStakes",
     },
     web2:{
       createStake:"/createStake",

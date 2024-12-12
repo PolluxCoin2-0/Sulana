@@ -14,7 +14,7 @@ import MintedTransactions from "./MintedTransactions";
 import ShimmerEffect from "@/app/components/ShimmerEffect";
 import {approvalApi, claimRewardAmountApi, claimRewardApi, 
 createClaimRewardWeb2Api, createMintWeb2Api, createStakeTransactionWeb2Api, getAllUserCountWeb2Api, 
-getBalanceApi, getCappingAmountApi, getDirectBonusApi, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, 
+getBalanceApi, getCappingAmountApi, getDirectBonusApi, getLastMintTimeFromWeb3, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, 
 updateStakeByIdWeb2Api, userAllStakesApi } from "@/api/apiFunctions";
 import { useSelector } from "react-redux";
 import { TransactionInterface, UserDetailsData } from "@/interface";
@@ -24,6 +24,7 @@ import Loader from "../components/Loader";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { SignBroadcastTransactionStatus } from "@/lib/signBroadcastTransactionStatus";
+import FetchTime from "./FetchTime";
 
 const DashBoard: React.FC = () => {
   const router = useRouter();
@@ -111,18 +112,31 @@ const DashBoard: React.FC = () => {
   }
 
   function is24HoursCompleted(lastTime: string): boolean {
-    const currentTime: Date = new Date(); // Get the current date and time
-    const lastTimeDate: Date = new Date(lastTime); // Convert the given time to a Date object
-
-    // Calculate the difference in milliseconds
-    const timeDifference: number = currentTime.getTime() - lastTimeDate.getTime();
-
-    // Convert milliseconds to hours
-    const hoursDifference: number = timeDifference / (1000 * 60 * 60);
-
-    // Check if 24 hours have passed
+    // Split the input into date and time components
+    const [datePart, timePart] = lastTime.split(', ');
+    if (!datePart || !timePart) {
+      console.error("Invalid date format");
+      return false;
+    }
+  
+    // Parse date and time into components
+    const [day, month, year] = datePart.split('/').map(Number);
+    const [hours, minutes, seconds] = timePart.split(':').map(Number);
+  
+    // Construct the Date object
+    const lastTimeDate = new Date(year, month - 1, day, hours, minutes, seconds);
+  
+    if (isNaN(lastTimeDate.getTime())) {
+      console.error("Invalid date object constructed");
+      return false;
+    }
+  
+    const currentTime = new Date(); // Get the current date and time
+    const timeDifference = currentTime.getTime() - lastTimeDate.getTime(); // Difference in milliseconds
+    const hoursDifference = timeDifference / (1000 * 60 * 60); // Convert to hours
+  
     return hoursDifference >= 24;
-}
+  }
 
   // STAKE FUNC
   const handleStakeFunc =async (e: React.MouseEvent<HTMLButtonElement> ): Promise<void> => {
@@ -265,7 +279,7 @@ const DashBoard: React.FC = () => {
   }
 
   // MINT FUNC
-  const handleMintFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, amount:number, userID:string, lastMintedTime:string ): Promise<void> => {
+  const handleMintFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, amount:number, userID:string ): Promise<void> => {
     e.preventDefault();
     if(isMintLoading){
       toast.warning("Minting in progress");
@@ -274,9 +288,9 @@ const DashBoard: React.FC = () => {
 
     setIsMintLoading(true);
     try {
-
+      const lastMintedTimeFromWeb3 = await getLastMintTimeFromWeb3(userStateData?.dataObject?.walletAddress as string, index);
       // 24 Hours completed or not
-      const isLastMintedTime = is24HoursCompleted(lastMintedTime);
+      const isLastMintedTime = is24HoursCompleted(lastMintedTimeFromWeb3?.data?.lastMintedAt);
       if(!isLastMintedTime){
         toast.error("24 hours must pass before minting again.");
         throw new Error("24 hours must pass before minting again.");
@@ -341,7 +355,6 @@ const DashBoard: React.FC = () => {
       setIsMintLoading(false);
     }
   }
-
 
   const handleReferralLinkCopy = () => {
     if (userStateData?.dataObject?.walletAddress) {
@@ -576,7 +589,8 @@ const DashBoard: React.FC = () => {
     <p className="px-4 py-2 w-[20%] text-center">{item?.mintCount} / 1000</p>
     <p className="px-4 py-2 w-[20%] text-left lg:text-center">{new Date(item?.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
     <p className="px-0 lg:px-4 py-2 w-[20%] text-left lg:text-center">
-      {item?.lastMintedAt === "01/01/1970, 05:30:00" ? "First Mint": new Date(item?.lastMintedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
+      <FetchTime userStateData={userStateData} index={index}/>
+      </p>
     <div className="lg:w-[20%] px-4 flex justify-end">
       {
        item.isLoading ? <div className="w-full lg:w-[50%] rounded-xl flex justify-center bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] ">
@@ -584,7 +598,7 @@ const DashBoard: React.FC = () => {
       </div> : 
       <button
       disabled={item.isUnstaked}
-      onClick={(e)=>handleMintFunc(e,index, item?.amount, item?._id, item?.lastMintedAt)}
+      onClick={(e)=>handleMintFunc(e,index, item?.amount, item?._id)}
       className={`w-full lg:w-[50%] ${item.isUnstaked?"bg-gradient-to-r from-[rgba(137,34,179,0.3)] via-[rgba(90,100,214,0.3)] to-[rgba(185,77,228,0.3)]": "bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)]"} 
       text-white text-lg font-semibold px-4 py-2 rounded-xl transform hover:scale-105 transition delay-300`}
       >

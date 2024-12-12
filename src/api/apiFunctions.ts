@@ -5,7 +5,7 @@ import {
  } from "./apiGenericMethods";
 import API_ENDPOINTS from "./apiEndpoints"; // Import the API endpoints
 import axios from "axios";
-import { allCountUser, allMintTransactionResponseInterface, BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, LoginApiResponse, ReferralData, referralRewardInterface, registerInterface, stakeBalanceInterface, stakeUnstakebyIdInterface, Transaction,UpdateStakeResponseInterface,userDetailsInterface, userSRResponse, web2CreateMintInterface } from "@/interface";
+import { allCountUser, allMintTransactionResponseInterface, BroadcastResponse, checkUserExistedInterface, getAllStakesResponseInterface, getbalanceInterface, lastMintTimeResponseFromWeb3, LoginApiResponse, ReferralData, referralRewardInterface, registerInterface, stakeBalanceInterface, stakeUnstakebyIdInterface, Transaction,UpdateStakeResponseInterface,userDetailsInterface, userSRResponse, web2CreateMintInterface } from "@/interface";
 
 const FULL_NODE_TRANSACTION_URL = process.env.NEXT_PUBLIC_FULL_NODE_TRANSACTION_URL || "";
 
@@ -170,4 +170,9 @@ export const getUserIsSR = async (walletAddress: string): Promise<userSRResponse
     throw new Error("Failed to get SR details.");
   }
 };
+
+// GET PARTICULAR STAKE LAST MINT TIME
+export const getLastMintTimeFromWeb3 = async (walletAddress: string, stakeIndex:number): Promise<lastMintTimeResponseFromWeb3> => {
+  return postRequest<lastMintTimeResponseFromWeb3>(API_ENDPOINTS.user.getUserStakes,{walletAddress, stakeIndex});
+}
 
