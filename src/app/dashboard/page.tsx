@@ -567,7 +567,6 @@ const DashBoard: React.FC = () => {
 
       {/* Mint Table */}
       <div className="bg-gradient-to-b from-[rgba(43,37,90,0.34)] to-[rgba(200,200,200,0.09)] rounded-xl border-gray-400 border-[1px] border-opacity-30 p-4 my-4 w-full overflow-x-auto">
-  {/* Header Section */}
   <div className="bg-[#212D49] rounded-xl text-white flex flex-row items-center justify-between py-2 min-w-[850px] md:min-w-0">
     <p className="font-bold px-8 py-2 w-[20%] text-left">Amount</p>
     <p className="font-bold px-4 py-2 w-[20%] text-center">Maturity Days</p>
@@ -576,44 +575,27 @@ const DashBoard: React.FC = () => {
     <p className="font-bold px-8 py-2 w-[20%] text-right">Mint Reward</p>
   </div>
 
-  {/* Data Row Section */}
-  {
-    stakedArray.length>0 ? stakedArray.map ((item, index)=>{
-      return (
-        <>{
-          
-       <Link href={`https://poxscan.io/transactions-detail/${item?.trxId}`} 
-       className={`${item.isUnstaked?"text-gray-500" : "text-white"} flex flex-row items-center justify-between pt-4 min-w-[850px] md:min-w-0 pb-2 border-b border-gray-400 border-opacity-30 last:border-0`}
-        key={item?._id}>
-    <p className="px-8 py-2 w-[20%] text-left">{item?.amount}</p>
-    <p className="px-4 py-2 w-[20%] text-center">{item?.mintCount} / 1000</p>
-    <p className="px-4 py-2 w-[20%] text-left lg:text-center">{new Date(item?.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
-    <p className="px-0 lg:px-4 py-2 w-[20%] text-left lg:text-center">
-      <FetchTime userStateData={userStateData} index={index}/>
-      </p>
-    <div className="lg:w-[20%] px-4 flex justify-end">
-      {
-       item.isLoading ? <div className="w-full lg:w-[50%] rounded-xl flex justify-center bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)] ">
-        <Loader />
-      </div> : 
-      <button
-      disabled={item.isUnstaked}
-      onClick={(e)=>handleMintFunc(e,index, item?.amount, item?._id)}
-      className={`w-full lg:w-[50%] ${item.isUnstaked?"bg-gradient-to-r from-[rgba(137,34,179,0.3)] via-[rgba(90,100,214,0.3)] to-[rgba(185,77,228,0.3)]": "bg-gradient-to-r from-[rgba(137,34,179,0.7)] via-[rgba(90,100,214,0.7)] to-[rgba(185,77,228,0.7)]"} 
-      text-white text-lg font-semibold px-4 py-2 rounded-xl transform hover:scale-105 transition delay-300`}
+  {stakedArray.length > 0 ? (
+    stakedArray.map((item, index) => (
+      <Link
+        href={`https://poxscan.io/transactions-detail/${item?.trxId}`}
+        key={item?.trxId}
       >
-        Mint
-      </button>
-        }
-    </div>
-  </Link>
-      }
-        </>
-      )
-    }) : 
+        <FetchTime
+          userStateData={userStateData}
+          index={index}
+          isUnstaked={item?.isUnstaked}
+          buttonClick={handleMintFunc}
+          userId={item?._id}
+          isLoading={item.isLoading}
+        />
+      </Link>
+    ))
+  ) : (
     <p className="text-white font-bold text-xl pl-4 pt-4">No Stakes Found !</p>
-  }
+  )}
 </div>
+
       {/* Transaction Table */}
       <p className="font-bold text-white text-3xl mt-8 mb-4 pl-2 ">Transactions</p>
      <MintedTransactions  />
