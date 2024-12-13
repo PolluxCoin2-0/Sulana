@@ -22,9 +22,7 @@ const Login: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [srWalletAddress, setSrWalletAddress] = useState<string | null>(null);
-  const [normalWalletAddress, setNormalWalletAddress] = useState<string | null>(
-    null
-  );
+  const [normalWalletAddress, setNormalWalletAddress] = useState<string | null>(null);
 
   useEffect(() => {
     if (userStateData?.isLogin) {
@@ -74,7 +72,6 @@ const Login: React.FC = () => {
     try {
       const loginApiData = await loginApi(walletAddress);
       if (loginApiData?.statusCode !== 200) {
-        toast.error("Invalid wallet address or login failed.");
         throw new Error("Invalid wallet address or login failed.");
       }
 
@@ -88,6 +85,7 @@ const Login: React.FC = () => {
       toast.success("Login successful");
       router.push("/dashboard");
     } catch (error) {
+      toast.error("Invalid wallet address or login failed.");
       console.log("Login API Error:", error);
     }
   };
