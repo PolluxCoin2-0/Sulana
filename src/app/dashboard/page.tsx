@@ -14,8 +14,9 @@ import MintedTransactions from "./MintedTransactions";
 import ShimmerEffect from "@/app/components/ShimmerEffect";
 import {approvalApi, claimRewardAmountApi, claimRewardApi, 
 createClaimRewardWeb2Api, createMintWeb2Api, createStakeTransactionWeb2Api, getAllUserCountWeb2Api, 
-getBalanceApi, getCappingAmountApi, getDirectBonusApi, getLastMintTimeFromWeb3, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, 
-updateStakeByIdWeb2Api, userAllStakesApi } from "@/api/apiFunctions";
+getBalanceApi, getCappingAmountApi, getDirectBonusApi, getLastMintTimeFromWeb3, getTotalStakeLengthFromWeb3, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, 
+// updateStakeByIdWeb2Api,
+ userAllStakesApi } from "@/api/apiFunctions";
 import { useSelector } from "react-redux";
 import { TransactionInterface, UserDetailsData } from "@/interface";
 import { RootState } from "@/redux/store";
@@ -43,6 +44,7 @@ const DashBoard: React.FC = () => {
   const [directBonus, setDirectBonus] = useState<number>(0);
   const [cappingAmount, setCappingAmount] = useState<number>(0);
   const [contractAmount, setContractAmount] = useState<number>(0);
+  const [totalStakeLengthFromWeb3, setTotalStakeLengthFromWeb3] = useState<number>(0);
 
   useEffect(()=>{
     if(userStateData?.isLogin){
@@ -66,6 +68,7 @@ const DashBoard: React.FC = () => {
         bonusData,
         cappingAmountData,
         sulAmountData,
+        totalStakeLengthFromWeb3Data
       ] = await Promise.all([
         getUserDetailsApi(walletAddress),
         referralRewardApi(walletAddress),
@@ -75,6 +78,7 @@ const DashBoard: React.FC = () => {
         getDirectBonusApi(walletAddress),
         getCappingAmountApi(walletAddress),
         getBalanceApi("PFuM9uxKQssQt7qDXXAWddu6dA2K5htL4m"),
+        getTotalStakeLengthFromWeb3(walletAddress)
       ]);
 
       // Update states as data is received
@@ -94,6 +98,7 @@ const DashBoard: React.FC = () => {
       setDirectBonus(bonusData?.data);
       setCappingAmount(cappingAmountData?.data);
       setContractAmount(sulAmountData?.data);
+      setTotalStakeLengthFromWeb3(totalStakeLengthFromWeb3Data?.data)
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally{
@@ -279,7 +284,7 @@ const DashBoard: React.FC = () => {
   }
 
   // MINT FUNC
-  const handleMintFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, amount:number, userID:string ): Promise<void> => {
+  const handleMintFunc = async (e: React.MouseEvent<HTMLButtonElement>, index:number, amount:number): Promise<void> => {
     e.preventDefault();
     if(isMintLoading){
       toast.warning("Minting in progress");
@@ -331,13 +336,13 @@ const DashBoard: React.FC = () => {
           throw new Error("Save to DB Web2 Api Failed transaction");
         }
 
-     // UPDATE WEB2 MINT DATA
-     const web2updateStakeDataApi = await updateStakeByIdWeb2Api(userID);
-     console.log({web2updateStakeDataApi});
-
-     if(web2updateStakeDataApi?.statusCode!==200){
-      throw new Error("Web2 Update Stake APi Failed transaction");
-    }
+    //  // UPDATE WEB2 MINT DATA
+    //  const web2updateStakeDataApi = await updateStakeByIdWeb2Api(userID);
+    //  console.log({web2updateStakeDataApi});
+   
+    //  if(web2updateStakeDataApi?.statusCode!==200){
+    //   throw new Error("Web2 Update Stake APi Failed transaction");
+    // }
 
       await fetchData();
       toast.success("Mint successfully");
@@ -567,6 +572,7 @@ const DashBoard: React.FC = () => {
 
       {/* Mint Table */}
       <div className="bg-gradient-to-b from-[rgba(43,37,90,0.34)] to-[rgba(200,200,200,0.09)] rounded-xl border-gray-400 border-[1px] border-opacity-30 p-4 my-4 w-full overflow-x-auto">
+  {/* Header Section */}
   <div className="bg-[#212D49] rounded-xl text-white flex flex-row items-center justify-between py-2 min-w-[850px] md:min-w-0">
     <p className="font-bold px-8 py-2 w-[20%] text-left">Amount</p>
     <p className="font-bold px-4 py-2 w-[20%] text-center">Maturity Days</p>
@@ -575,27 +581,21 @@ const DashBoard: React.FC = () => {
     <p className="font-bold px-8 py-2 w-[20%] text-right">Mint Reward</p>
   </div>
 
-  {stakedArray.length > 0 ? (
-    stakedArray.map((item, index) => (
-      <Link
-        href={`https://poxscan.io/transactions-detail/${item?.trxId}`}
-        key={item?.trxId}
-      >
-        <FetchTime
-          userStateData={userStateData}
-          index={index}
-          isUnstaked={item?.isUnstaked}
-          buttonClick={handleMintFunc}
-          userId={item?._id}
-          isLoading={item.isLoading}
-        />
-      </Link>
-    ))
-  ) : (
-    <p className="text-white font-bold text-xl pl-4 pt-4">No Stakes Found !</p>
-  )}
+  {/* Data Rows */}
+  {
+    Array.from({ length: totalStakeLengthFromWeb3 }, (_, index) => {
+      return (
+     <>
+          <FetchTime
+            userStateData={userStateData}
+            index={index}
+            buttonClick={handleMintFunc}
+          />
+          </>
+      );
+    })
+  }
 </div>
-
       {/* Transaction Table */}
       <p className="font-bold text-white text-3xl mt-8 mb-4 pl-2 ">Transactions</p>
      <MintedTransactions  />

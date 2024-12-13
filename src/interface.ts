@@ -277,8 +277,13 @@ interface lastMintTimeResponseFromWeb3 {
     lastMintedAt: string,
     mintCount: number,
     maturityDuration: number,
-    beforeMaturityDuration: number
+    beforeMaturityDuration: number,
+    isUnstaked:boolean,
   }
+}
+
+interface stakeLength {
+  data :number;
 }
 
 export type {
@@ -306,5 +311,6 @@ export type {
   stakeUnstakebyIdInterface,
   ReferralData,
   userSRResponse,
-  lastMintTimeResponseFromWeb3
+  lastMintTimeResponseFromWeb3,
+  stakeLength
 };
