@@ -80,12 +80,12 @@ export const checkUserExistedApi = async (walletAddress:string, referredBy:strin
 }
 
 // WEB2 CREATE MINT API
-export const createMintWeb2Api = async (walletAddress:string,trxId:string, amount:number, status:string, token:string): Promise<web2CreateMintInterface> =>{
+export const createMintWeb2Api = async (walletAddress:string,trxId:string, amount:number, status:string | null, token:string): Promise<web2CreateMintInterface> =>{
   return postRequest<web2CreateMintInterface>(API_ENDPOINTS.web2.createMint,{walletAddress, trxId, amount, status},token);
 }
 
 // WEB2 CREATE CLAIM REWARD API
-export const createClaimRewardWeb2Api = async (walletAddress:string,trxId:string, amount:number, status:string, token:string): Promise<web2CreateMintInterface> =>{
+export const createClaimRewardWeb2Api = async (walletAddress:string,trxId:string, amount:number, status:string | null, token:string): Promise<web2CreateMintInterface> =>{
   return postRequest<web2CreateMintInterface>(API_ENDPOINTS.web2.createClaim,{walletAddress, trxId, amount, status},token);
 }
 
@@ -100,7 +100,7 @@ export const allMintTransactionWeb2Api = async (token:string, pageNumber:number)
 }
 
 // WEB2 CREATE STAKE TRANSACTION API
-export const createStakeTransactionWeb2Api = async (walletAddress:string,trxId:string, amount:number, status:string, userId:string): Promise<web2CreateMintInterface> =>{
+export const createStakeTransactionWeb2Api = async (walletAddress:string,trxId:string, amount:number, status:string | null, userId:string): Promise<web2CreateMintInterface> =>{
   return postRequest<web2CreateMintInterface>(`${API_ENDPOINTS.web2.createStake}/${userId}`,{walletAddress, trxId, amount, status},);
 }
 

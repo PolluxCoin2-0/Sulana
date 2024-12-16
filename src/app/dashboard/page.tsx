@@ -187,7 +187,7 @@ const DashBoard: React.FC = () => {
       }
 
       const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(approvalRawData?.data?.transaction, userStateData?.isUserSR);
-      if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
+      if (signBroadcastTransactionStatusFuncRes.transactionStatus === "REVERT") {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
       }
@@ -200,7 +200,7 @@ const DashBoard: React.FC = () => {
       }
 
       const stakeSignBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(stakedData?.data?.transaction, userStateData?.isUserSR);
-      if (stakeSignBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
+      if (stakeSignBroadcastTransactionStatusFuncRes.transactionStatus === "REVERT") {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
       }
@@ -256,7 +256,7 @@ const DashBoard: React.FC = () => {
 
       // SIGN TRANSACTION
       const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(claimRewardData?.data?.transaction, userStateData?.isUserSR);
-      if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
+      if (signBroadcastTransactionStatusFuncRes.transactionStatus === "REVERT") {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
       }
@@ -318,7 +318,7 @@ const DashBoard: React.FC = () => {
       
       // SIGN TRANSACTION
       const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(mintData?.data?.transaction, userStateData?.isUserSR);
-      if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
+      if (signBroadcastTransactionStatusFuncRes.transactionStatus === "REVERT") {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
       }

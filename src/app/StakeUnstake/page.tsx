@@ -80,7 +80,7 @@ const StakeUnstakePage: React.FC = () => {
 
     // SIGN TRANSACTION
     const signBroadcastTransactionStatusFuncRes = await SignBroadcastTransactionStatus(unstakeApiData?.data?.transaction, userStateData?.isUserSR);
-      if (signBroadcastTransactionStatusFuncRes.transactionStatus !== "SUCCESS") {
+      if (signBroadcastTransactionStatusFuncRes.transactionStatus === "REVERT") {
         toast.error("Transaction failed!");
         throw new Error("Transaction failed!");
       }
