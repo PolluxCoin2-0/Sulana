@@ -11,8 +11,8 @@ export default function Home() {
       <div className="w-20 h-20 border-8 border-white border-t-purple-600 rounded-full animate-spin mb-8"></div>
       <div className="bg-white/10 p-4 rounded-lg text-center">
         <p className="text-lg italic">
-          "Patience is not the ability to wait, but the ability to keep a good
-          attitude while waiting."
+        &quot;Patience is not the ability to wait, but the ability to keep a good
+        attitude while waiting.&quot;
         </p>
         <p className="mt-2 text-sm">— Joyce Meyer</p>
       </div>
