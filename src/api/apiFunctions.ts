@@ -181,3 +181,7 @@ export const getTotalStakeLengthFromWeb3 = async (walletAddress: string,): Promi
   return postRequest<stakeLength>(API_ENDPOINTS.user.getStakeLength,{walletAddress,});
 }
 
+// GET INITIAL RETURN
+export const getInitialReturn = async (walletAddress: string,): Promise<stakeLength> => {
+  return postRequest<stakeLength>(API_ENDPOINTS.user.getInitialReturn,{walletAddress,});
+}
