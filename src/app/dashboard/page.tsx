@@ -14,7 +14,7 @@ import MintedTransactions from "./MintedTransactions";
 import ShimmerEffect from "@/app/components/ShimmerEffect";
 import {approvalApi, claimRewardAmountApi, claimRewardApi, 
 createClaimRewardWeb2Api, createMintWeb2Api, createStakeTransactionWeb2Api, getAllUserCountWeb2Api, 
-getBalanceApi, getCappingAmountApi, getDirectBonusApi, getLastMintTimeFromWeb3, getTotalStakeLengthFromWeb3, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, 
+getBalanceApi, getCappingAmountApi, getDirectBonusApi, getInitialReturn, getLastMintTimeFromWeb3, getTotalStakeLengthFromWeb3, getUserDetailsApi, mintUserApi, referralRewardApi, stakeSulBalanceApi, 
 // updateStakeByIdWeb2Api,
  userAllStakesApi } from "@/api/apiFunctions";
 import { useSelector } from "react-redux";
@@ -45,6 +45,7 @@ const DashBoard: React.FC = () => {
   const [cappingAmount, setCappingAmount] = useState<number>(0);
   const [contractAmount, setContractAmount] = useState<number>(0);
   const [totalStakeLengthFromWeb3, setTotalStakeLengthFromWeb3] = useState<number>(0);
+  const [initialReturnAmount, setInitialReturnAmount] = useState<number>(0);
 
   useEffect(()=>{
     if(userStateData?.isLogin){
@@ -68,7 +69,8 @@ const DashBoard: React.FC = () => {
         bonusData,
         cappingAmountData,
         sulAmountData,
-        totalStakeLengthFromWeb3Data
+        totalStakeLengthFromWeb3Data,
+        initialReturnData,
       ] = await Promise.all([
         getUserDetailsApi(walletAddress),
         referralRewardApi(walletAddress),
@@ -78,7 +80,8 @@ const DashBoard: React.FC = () => {
         getDirectBonusApi(walletAddress),
         getCappingAmountApi(walletAddress),
         getBalanceApi("PNKDNUiXnjXm1FAeuBhuobnyvHHR1hYdvj"),
-        getTotalStakeLengthFromWeb3(walletAddress)
+        getTotalStakeLengthFromWeb3(walletAddress),
+        getInitialReturn(walletAddress)
       ]);
 
       // Update states as data is received
@@ -99,6 +102,7 @@ const DashBoard: React.FC = () => {
       setCappingAmount(cappingAmountData?.data);
       setContractAmount(sulAmountData?.data);
       setTotalStakeLengthFromWeb3(totalStakeLengthFromWeb3Data?.data)
+      setInitialReturnAmount(initialReturnData?.data)
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally{
@@ -379,7 +383,7 @@ const DashBoard: React.FC = () => {
   return (
     <div className="min-h-screen bg-black px-2 md:px-4 py-7">
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Referral Link Section */}
       <div
         className="bg-[linear-gradient(90.11deg,rgba(137,34,179,0.264)_0.11%,rgba(43,37,90,0.1782)_47.67%,rgba(105,26,139,0.264)_99.92%)]
@@ -429,6 +433,17 @@ const DashBoard: React.FC = () => {
         Total Users / Total Staked :
         </p>
         <p className="text-white font-bold text-base">{allUserCount} / {contractAmount}</p>
+      </div>
+
+      {/* Initial Return */}
+      <div
+        className="bg-[linear-gradient(90.11deg,rgba(137,34,179,0.264)_0.11%,rgba(43,37,90,0.1782)_47.67%,rgba(105,26,139,0.264)_99.92%)]
+         py-[18px] px-4 lg:px-8 rounded-xl flex justify-between items-center"
+      >
+        <p className="text-white font-bold text-base truncate">
+        Initial Return :
+        </p>
+        <p className="text-white font-bold text-base">{initialReturnAmount}</p>
       </div>
       </div>
 
@@ -574,7 +589,7 @@ const DashBoard: React.FC = () => {
       <div className="bg-gradient-to-b from-[rgba(43,37,90,0.34)] to-[rgba(200,200,200,0.09)] rounded-xl border-gray-400 border-[1px] border-opacity-30 p-4 my-4 w-full overflow-x-auto">
   {/* Header Section */}
   <div className="bg-[#212D49] rounded-xl text-white flex flex-row items-center justify-between py-2 min-w-[850px] md:min-w-0">
-    <p className="font-bold px-8 py-2 w-[20%] text-left">Amount</p>
+    <p className="font-bold px-8 py-2 w-[20%] text-left">Amount / InitialReturn</p>
     <p className="font-bold px-4 py-2 w-[20%] text-center">Maturity Days</p>
     <p className="font-bold px-4 py-2 w-[20%] text-center">Invest Date</p>
     <p className="font-bold px-4 py-2 w-[20%] text-center">Last Mint</p>

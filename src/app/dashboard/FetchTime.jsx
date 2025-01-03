@@ -38,7 +38,7 @@ const FetchTime = ({ userStateData, index, buttonClick }) => {
       } flex flex-row items-center justify-between pt-4 min-w-[850px] 
        md:min-w-0 pb-2`}
     >
-      <p className="px-8 py-2 w-[20%] text-left">{mintTime?.data?.amount}</p>
+      <p className="px-8 py-2 w-[20%] text-left">{mintTime?.data?.amount} / {mintTime?.data?.initialReturn ?? 0}</p>
       <p className="px-4 py-2 w-[20%] text-center">
         {mintTime?.data?.mintCount} / 1000
       </p>
